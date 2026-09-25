@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Канон проекта</title>
+<!-- Собирается `python xtask.py` из md. Руками не править: правим _ctx.md и пересобираем. -->
+<style>
+:root { --bg:#f6f5f2; --surface:#fff; --surface-2:#efeee9; --border:#e2e0d9; --text:#1c1b19; --muted:#6e6b63; --faint:#a19d93;
+  --accent:#e3262f; --accent-soft:#fbe3e4; --ok:#1f8a4c; --ok-soft:#dff2e6; --warn:#a86400; --warn-soft:#fbeed8; --err:#c0262d; --err-soft:#fbe3e4;
+  --mono:ui-monospace,"SF Mono",Menlo,monospace; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --bg:#131312; --surface:#1c1c1a; --surface-2:#262624; --border:#30302d;
+  --text:#efede8; --muted:#9c9990; --faint:#6b6861; --accent:#ff4b53; --accent-soft:#3a1c1e; --ok:#4cc47f; --ok-soft:#173424;
+  --warn:#e0a043; --warn-soft:#3a2c14; --err:#ff6b70; --err-soft:#3a1c1e; } }
+:root[data-theme="dark"] { --bg:#131312; --surface:#1c1c1a; --surface-2:#262624; --border:#30302d; --text:#efede8; --muted:#9c9990; --faint:#6b6861;
+  --accent:#ff4b53; --accent-soft:#3a1c1e; --ok:#4cc47f; --ok-soft:#173424; --warn:#e0a043; --warn-soft:#3a2c14; --err:#ff6b70; --err-soft:#3a1c1e; }
+* { box-sizing:border-box; } html,body { margin:0; }
+body { background:var(--bg); color:var(--text); font:14.5px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; -webkit-font-smoothing:antialiased; }
+.wrap { max-width:1180px; margin:0 auto; padding:28px 16px 64px; }
+header { display:flex; gap:12px; align-items:center; flex-wrap:wrap; }
+h1 { font-size:21px; margin:0; letter-spacing:-.01em; } h1 small { color:var(--muted); font-weight:500; font-size:14px; margin-left:8px; }
+.pill { font-size:12px; padding:2px 10px; border-radius:99px; background:var(--surface-2); color:var(--muted); white-space:nowrap; }
+.pill.ok { background:var(--ok-soft); color:var(--ok); } .pill.err { background:var(--err-soft); color:var(--err); } .pill.warn { background:var(--warn-soft); color:var(--warn); }
+.spacer { flex:1; }
+h2 { font-size:12.5px; text-transform:uppercase; letter-spacing:.06em; color:var(--muted); margin:26px 0 10px; font-weight:600; }
+.stepper { display:flex; gap:0; margin-top:18px; overflow-x:auto; }
+.st { flex:1; min-width:150px; padding:10px 12px 0 0; position:relative; }
+.st::before { content:""; position:absolute; top:17px; left:16px; right:0; height:2px; background:var(--border); }
+.st:last-child::before { display:none; }
+.st .dot { width:16px; height:16px; border-radius:50%; background:var(--surface); border:2px solid var(--border); position:relative; z-index:1; }
+.st.готово .dot { background:var(--ok); border-color:var(--ok); } .st.готово::before { background:var(--ok); }
+.st.сейчас .dot { background:var(--accent); border-color:var(--accent); box-shadow:0 0 0 4px var(--accent-soft); }
+.st b { display:block; font-size:13.5px; margin-top:8px; } .st span { font-size:12.5px; color:var(--muted); }
+.st.далее b { color:var(--muted); font-weight:500; }
+.tiles { display:grid; grid-template-columns:repeat(6,1fr); gap:10px; }
+.tile { background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:12px 14px; }
+.tile .k { font-size:12px; color:var(--muted); } .tile .v { font-size:24px; font-weight:650; font-family:var(--mono); letter-spacing:-.02em; }
+.tile.hot .v { color:var(--err); }
+.layers { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+.layer h3 { font-size:13px; margin:0 0 8px; color:var(--muted); letter-spacing:.04em; }
+.mod { background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:16px; margin-bottom:12px; }
+.mod-head { display:flex; gap:10px; align-items:baseline; flex-wrap:wrap; } .mod-head b { font-size:16px; }
+.mod-head code { font-family:var(--mono); font-size:12px; color:var(--faint); }
+.st-стабильно { background:var(--ok-soft); color:var(--ok); } .st-чинится { background:var(--err-soft); color:var(--err); }
+.st-в-работе { background:var(--warn-soft); color:var(--warn); }
+.purpose { color:var(--muted); margin:6px 0 10px; }
+.counts { display:flex; gap:6px; flex-wrap:wrap; }
+details { border-top:1px solid var(--border); margin-top:10px; padding-top:8px; }
+summary { cursor:pointer; font-size:13px; color:var(--muted); user-select:none; }
+ul { margin:6px 0 0; padding-left:18px; } li { margin:3px 0; }
+code { font-family:var(--mono); font-size:.92em; background:var(--surface-2); padding:0 4px; border-radius:4px; }
+.due { font-family:var(--mono); font-size:12px; padding:0 6px; border-radius:6px; background:var(--surface-2); margin-right:6px; }
+.due.late { background:var(--err-soft); color:var(--err); }
+.list { background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:4px 16px; }
+.row { display:flex; gap:10px; padding:9px 0; border-bottom:1px solid var(--border); align-items:baseline; }
+.row:last-child { border-bottom:0; }
+.row .m { font-family:var(--mono); font-size:12px; color:var(--muted); min-width:84px; }
+.empty { color:var(--faint); padding:10px 0; }
+.two { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+.msg.err { color:var(--err); } .msg.warn { color:var(--warn); }
+@media (max-width:820px) { .tiles { grid-template-columns:repeat(3,1fr); } .layers, .two { grid-template-columns:1fr; } }
+</style>
+</head>
+<body>
+<div class="wrap" id="app"></div>
+<script>
+const DATA = {"project": "MTS Link загрузчик", "stages": [{"n": 1, "state": "готово", "title": "Аудио из CLI", "desc": "первая выгрузка MP3 вебинара, сведение 18 дорожек"}, {"n": 2, "state": "готово", "title": "Дашборд загрузок", "desc": "FastAPI + UI, режимы аудио/видео, история, докачка"}, {"n": 3, "state": "сейчас", "title": "Канон и проверка", "desc": "xtask, тесты, раскладка папок, git + приватный GitHub"}, {"n": 4, "state": "далее", "title": "Видео в бою", "desc": "проверка «Видео + аудио» и экрана на реальной записи"}, {"n": 5, "state": "далее", "title": "Совместимость видео", "desc": "решение по H.264 для QuickTime"}], "modules": [{"name": "downloader", "dir": "downloader", "layer": "БЭКЕНД", "purpose": "Скачивает запись вебинара MTS Link в режиме «только аудио» (MP3), «видео + аудио» или «только видео» (MP4) и складывает итог в папку загрузки. Не знает про HTTP-сервер и UI.", "contract": ["- `Job(url, mode, quality, streams, workers)` + `await run(job)` — выполняет задачу; наружу не бросает, итог в `job.status / error / outputs / log`", "- статусы: `queued → meta → download → mix → mux → done | error | cancelled | interrupted`", "- `await analyze(client, url)` → `{sid, title, date, duration, tracks}`; у дорожки `variants`, `has_audio`, `kind`", "- `job_folder(job)` → `downloads/ГГГГ-ММ-ДД_ЧЧММ <название>/`, промежуточные — `job.work` = `…/_work/`", "- `job.cancel = True` — мягкая отмена: воркеры и ffmpeg останавливаются, сегменты остаются", "- CLI: `.venv/bin/python -m downloader.cli <ссылка> [--mode audio|av|video] [--quality best|480] [--workers 64]`", "- вход API MTS Link: `GET /api/eventsessions/<id>/record?withoutCuts=false` (открытые записи — без авторизации)"], "status": "в работе", "invariants": ["качаются только нужные HLS-рендишны (аудио `a1/…`, видео — вариант по качеству); mp4 целиком не качается", "сегмент пишется через `.part` + rename — недокачанный файл никогда не лежит под финальным именем", "перезапуск той же задачи не качает сегменты, уже лежащие в `_work/`", "видео не перекодируется (`-c copy`); в режиме av звук — кусок общего микса с `relativeTime` потока", "ffmpeg пишет во временный `*.part.*`; при сбое/отмене он удаляется", "`run()` никогда не бросает исключений наружу"], "tasks": [{"red": false, "due": "", "text": "e2e «Видео + аудио» на длинном потоке: проверить синхрон звука и видео (ffprobe + глазами)"}, {"red": false, "due": "", "text": "проверить определение экрана (`kind=screen`) на записи с демонстрацией экрана"}, {"red": false, "due": "", "text": "проверить отмену на этапе сведения (ffmpeg terminate) и повторный запуск после неё"}, {"red": false, "due": "", "text": "подпись качества в имени файла брать из реального кадра (ffprobe), а не из RESOLUTION плейлиста"}, {"red": false, "due": "", "text": "тест конвейера `_plan`/докачки на фейковом HTTP-сервере (сейчас проверено только вживую)"}], "debt": ["определение экрана — эвристика по модулю `screensharing*` в eventLogs; в тестовой записи экрана не было, проверить не на чем", "RESOLUTION в master-плейлисте не совпадает с кадром (заявлено 640×480, реально 640×360 — ffprobe 25.09); в имени файла «480p»", "ретраи: 6 попыток с паузой до 20 с; при 403/404 — сразу ошибка. Порог подобран без замеров потерь", "`_work/` занимает ~2× аудио (917 МБ на запись 24554640907, 25.09): сегменты + склеенные `a.mp4`; сегменты нужны для докачки, чистится кнопкой «Удалить промежуточные»", "`bytes_total_est` — оценка по среднему размеру сегмента, точного размера заранее нет (HEAD на тысячи сегментов дорого)"], "seals": ["Ъ — запись = параллельные дорожки участников (18 в тестовой записи); склейка только сведением amix по relativeTime, concat нельзя (25.09)", "Ъ — в amix обязателен `normalize=0`, иначе итог тихий: amix делит громкость на число входов (25.09)", "Ъ — папка на каждую загрузку: `downloads/ГГГГ-ММ-ДД_ЧЧММ <название>/` по моменту загрузки, внутри итог и `_work/`; повтор той же записи не перезаписывает прошлую (25.09)"], "waiting": ["⏳ владелец → запись с демонстрацией экрана для проверки `kind=screen`, с 25.09"], "open": ["❓ видео VP9 в MP4 не открывается в QuickTime — перекодировать в H.264 (дольше, нагрузка на CPU) или оставить как есть?"], "dont_touch": ["`media.mix_filter`: `normalize=0` и `adelay=…:all=1` — без них тихий звук или сдвиг только левого канала", "`pipeline._drain`: запись сегмента через `.part` + `replace` — на этом держится докачка", "`pipeline.job_folder`: если `job.folder` уже задан, он возвращается как есть — иначе перезапуск уедет в новую папку и докачка сломается"]}, {"name": "scripts", "dir": "scripts", "layer": "БЭКЕНД", "purpose": "Окружение и запуск: venv, зависимости, двойной клик для дашборда, скрипты длинных прогонов под caffeinate, сборщик канона и git.", "contract": ["- `start.command` (корень) — двойной клик в Finder: найти рабочий Python 3.10+, создать `.venv`, поставить `requirements.txt`, поднять сервер, открыть браузер; если сервер уже жив — просто открыть", "- `scripts/download.sh <ссылка> [--mode …]` — CLI-загрузка под `caffeinate -i`", "- `requirements.txt`: fastapi, uvicorn, httpx; внешняя зависимость — `ffmpeg`/`ffprobe` (Homebrew)", "- `xtask.py` + `tools/` — сборщик и валидатор канона; `tests/` — unittest", "- git: приватный GitHub `mts-link-downloader`; в git не идут `.venv/`, `downloads/`, `tracks/`, `history.json`"], "status": "в работе", "invariants": ["Python для проекта — только `.venv/bin/python` (3.12)", "всё, что должно выполниться без человека, — одной строкой в `scripts/*.sh`"], "tasks": [{"red": false, "due": "", "text": "бэкап `downloads/` на второй носитель (урок Hustle: диск без копии — не диск) — куда? см. ОТКРЫТО"}], "debt": ["Homebrew `python@3.13` 3.13.7 сломан: бинарник `python3.13` — пустой файл 0 байт, `python3` молча ничего не делает (25.09). Лечится `brew reinstall python@3.13`; проект живёт на 3.12, поэтому не чиним", "`caffeinate -i` не спасает от сна при закрытой крышке — крышку во время длинной загрузки не закрывать"], "seals": ["Ъ — сборщик канона: `python xtask.py`, валидатор `python xtask.py --check` (вместо cargo xtask) (25.09)", "Ъ — репозиторий: приватный GitHub `mts-link-downloader` (25.09)"], "waiting": [], "open": ["❓ куда копировать `downloads/` для бэкапа (второй диск / облако) и нужно ли вообще"], "dont_touch": ["`start.command`: перебор `python3.12 → … → python3` с проверкой `print(...)` — голый `python3` на этой машине битый и молчит"]}, {"name": "server", "dir": "server", "layer": "БЭКЕНД", "purpose": "Локальный HTTP-сервер дашборда: принимает задачи, гоняет `downloader.run` в фоне, хранит историю, раздаёт интерфейс `ui/` и готовые файлы. Только 127.0.0.1.", "contract": ["- запуск: `.venv/bin/python -m server.app` (порт `PORT`, по умолчанию 8765)", "- `POST /api/analyze {url}` → запись и дорожки с вариантами видео (без URL рендишнов)", "- `POST /api/jobs {url, mode, quality, streams, workers}` → 201 + задача; для av/video `streams` обязателен", "- `GET /api/jobs` → задачи новые сверху; + `speed, eta, progress, bytes_total_est, work_size, outputs[].exists`", "- `POST /api/jobs/{id}/cancel | restart | reveal | clean`, `DELETE /api/jobs/{id}` (409 для активной)", "- `GET /files/{id}/{n}[?dl=1]` → n-й итоговый файл (Range поддерживается)", "- `GET /` и статика — `ui/`", "- `history.json` в корне: список `Job.to_dict()`; автосохранение раз в 2 с, пока есть активные"], "status": "стабильно", "invariants": ["обработчики, запускающие задачи (`create`, `restart`), — `async def`", "после рестарта сервера активные задачи становятся `interrupted`, «Продолжить» докачивает", "«Удалить из истории» не удаляет файлы; «Удалить промежуточные» трогает только `_work/` внутри `downloads/`", "пока есть активная задача, живёт `caffeinate -i -w <pid сервера>`"], "tasks": [{"red": false, "due": "", "text": "e2e двойного клика по start.command на чистом окружении (без .venv)"}, {"red": false, "due": "", "text": "ограничить число одновременных задач (сейчас каждая берёт свои 64 соединения)"}], "debt": ["состояние задач только в памяти процесса + history.json; при падении сервера теряется прогресс с момента последнего автосохранения (≤2 с)", "`GET /api/jobs` отдаёт полный журнал и дорожки каждой задачи на каждом опросе — пока история короткая, не мешает"], "seals": ["Ъ — сервер на FastAPI + uvicorn в том же .venv, UI опрашивает статус (без SSE) (25.09)"], "waiting": [], "open": [], "dont_touch": ["`app.mount(\"/\", StaticFiles…)` — строго последним, иначе перекроет `/api` и `/files`", "`store.launch`: `job.reset()` сохраняет `folder` — на этом держится перезапуск в ту же папку"]}, {"name": "ui", "dir": "ui", "layer": "ФРОНТЕНД", "purpose": "Интерфейс загрузчика в браузере: ввод ссылки, выбор режима/качества/потоков, прогресс текущих загрузок, история прошлых. Работает только через `server` (CORS и запись на диск — не из браузера).", "contract": ["- `ui/index.html` + `style.css` + ES-модули без сборки: `app.js` (вход, опрос, действия), `form.js`, `board.js`, `history.js`, `util.js`", "- опрос `GET /api/jobs`: 1 с при активных задачах, 3 с без них", "- кнопки — через `data-act` + `data-id` и один делегированный обработчик: cancel, restart, reveal, clean, delete, play", "- localStorage: только последний режим и число потоков"], "status": "в работе", "invariants": ["история перерисовывается только при изменении данных — клики и открытый журнал не сбиваются", "любой текст с сервера — через `esc()`", "режим «аудио» не требует анализа записи; av/video — без выбранного потока не отправляются"], "tasks": [{"red": false, "due": "", "text": "проверить в браузере глазами карточку активной загрузки: прогресс, таймлайн, журнал, плеер (история и форма — проверены скриншотом)"}, {"red": false, "due": "", "text": "узкий экран (телефон): таймлайн и строка истории"}], "debt": ["нет тестов JS; синтаксис проверен `node --check`, поведение — вручную", "MP4 в истории не проигрывается встроенным плеером, только «Показать в Finder» / «скачать»"], "seals": ["Ъ — интерфейс загрузчика живёт в `ui/index.html`, `dashboard.html` в корне — дашборд канона, собирается xtask (25.09)"], "waiting": [], "open": [], "dont_touch": ["`app.js`: слушатель `toggle` на фазе перехвата (`true`) — событие не всплывает, без него журнал закрывается при перерисовке"]}], "archive": [{"date": "25.09", "module": "ui", "text": "скриншот UI (headless Chrome): форма и история трёх загрузок отображаются; исправлен видимый выбор качества в режиме «аудио»"}, {"date": "25.09", "module": "downloader", "text": "e2e «Только аудио» через дашборд, 64 потока: ~2–2,8 МБ/с, ~4 мин, MP3 1:25:30 побайтово равен первому (md5)"}, {"date": "25.09", "module": "downloader", "text": "e2e отмена + перезапуск: 524 сегмента взяты с диска, повторно не качались"}, {"date": "25.09", "module": "downloader", "text": "e2e «Только видео» на коротком потоке: MP4 VP9 12,4 с, без перекодирования"}, {"date": "25.09", "module": "server", "text": "caffeinate -i -w <pid> держится, пока идёт хоть одна загрузка"}, {"date": "25.09", "module": "downloader", "text": "папка на каждую загрузку downloads/ГГГГ-ММ-ДД_ЧЧММ <название>/ + _work/; прошлый MP3 и history.json перенесены"}, {"date": "25.09", "module": "ui", "text": "интерфейс переехал в ui/ (index.html, style.css, 5 ES-модулей), чтобы сборщик не затёр dashboard.html"}, {"date": "25.09", "module": "server", "text": "код разнесён на server/app.py + server/store.py"}, {"date": "25.09", "module": "downloader", "text": "код разнесён на пакет downloader/ (config, models, hls, media, pipeline, cli) — файлы ≤200 строк"}, {"date": "25.09", "module": "scripts", "text": "развёрнут канон: CLAUDE.md, spec.md, roadmap.md, arhiv.md, _ctx.md, xtask.py"}, {"date": "25.09", "module": "scripts", "text": "клон MTS-Link-audio-downloader удалён — не используется"}, {"date": "25.09", "module": "ui", "text": "дашборд загрузок: режимы, выбор видеопотоков и качества, таймлайн дорожек, журнал, история"}], "check": {"errors": [], "warnings": []}};
+const esc0 = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const esc = s => esc0(s).replace(/`([^`]+)`/g, "<code>$1</code>");
+const today = new Date();
+function late(ddmm) {
+  if (!ddmm) return false;
+  const [d, m] = ddmm.split(".").map(Number);
+  return new Date(today.getFullYear(), m - 1, d, 23, 59) < today;
+}
+const due = t => t.due ? `<span class="due ${late(t.due) ? "late" : ""}">${t.red ? "🔴 " : ""}${t.due}</span>` : "";
+const items = (xs, f = esc) => xs.length ? `<ul>${xs.map(x => `<li>${f(x)}</li>`).join("")}</ul>` : `<div class="empty">—</div>`;
+const rows = (xs) => xs.length ? xs.map(([m, html]) => `<div class="row"><span class="m">${esc(m)}</span><span>${html}</span></div>`).join("") : `<div class="empty">—</div>`;
+
+function stepper() {
+  return `<div class="stepper">${DATA.stages.map(s => `<div class="st ${s.state}"><div class="dot"></div>
+    <b>${s.n}. ${esc(s.title)}</b><span>${esc(s.desc)}</span></div>`).join("")}</div>`;
+}
+function tiles() {
+  const M = DATA.modules, all = f => M.flatMap(f);
+  const reds = all(m => m.tasks.filter(t => t.red)), lateN = reds.filter(t => late(t.due)).length;
+  const t = (k, v, hot) => `<div class="tile ${hot ? "hot" : ""}"><div class="k">${k}</div><div class="v">${v}</div></div>`;
+  return `<div class="tiles">${t("Модулей", M.length)}${t("Задач", all(m => m.tasks).length)}
+    ${t("🔴 со сроком" + (lateN ? `, просрочено ${lateN}` : ""), reds.length, lateN)}${t("❓ открыто", all(m => m.open).length, all(m => m.open).length)}
+    ${t("⏳ ждуны", all(m => m.waiting).length)}${t("Ъ печатей", all(m => m.seals).length)}</div>`;
+}
+function block(title, xs, f) {
+  return `<details ${title.startsWith("Задачи") && xs.length ? "open" : ""}><summary>${title} · ${xs.length}</summary>${items(xs, f)}</details>`;
+}
+function mod(m) {
+  const c = (n, label) => n ? `<span class="pill">${label} ${n}</span>` : "";
+  return `<div class="mod"><div class="mod-head"><b>${esc(m.name)}</b><code>${esc(m.dir)}/_ctx.md</code><span class="spacer"></span>
+    <span class="pill st-${esc(m.status.replace(" ", "-"))}">${esc(m.status)}</span></div>
+    <div class="purpose">${esc(m.purpose)}</div>
+    <div class="counts">${c(m.tasks.length, "задач")}${c(m.open.length, "❓")}${c(m.waiting.length, "⏳")}${c(m.seals.length, "Ъ")}${c(m.debt.length, "техдолг")}</div>
+    ${block("Задачи", m.tasks, t => due(t) + esc(t.text))}
+    ${block("Контракт", m.contract.map(x => x.replace(/^- /, "")), x => esc(x))}
+    ${block("Инварианты", m.invariants)}${block("Печати", m.seals)}${block("Техдолг", m.debt)}
+    ${block("Ждуны", m.waiting)}${block("Открыто", m.open)}${block("Не трогать", m.dont_touch)}</div>`;
+}
+function layers() {
+  return `<div class="layers">${["ФРОНТЕНД", "БЭКЕНД"].map(L => `<div class="layer"><h3>${L}</h3>
+    ${DATA.modules.filter(m => m.layer === L).map(mod).join("") || `<div class="empty">нет модулей</div>`}</div>`).join("")}</div>`;
+}
+function render() {
+  const M = DATA.modules, chk = DATA.check;
+  const reds = M.flatMap(m => m.tasks.filter(t => t.red).map(t => [m.dir, t]))
+    .sort((a, b) => { const k = t => t.due.split(".").reverse().join(""); return k(a[1]) < k(b[1]) ? -1 : 1; });
+  const badge = chk.errors.length ? `<span class="pill err">валидатор: ошибок ${chk.errors.length}</span>`
+    : `<span class="pill ${chk.warnings.length ? "warn" : "ok"}">валидатор зелёный${chk.warnings.length ? `, предупреждений ${chk.warnings.length}` : ""}</span>`;
+  document.getElementById("app").innerHTML = `
+    <header><h1>${esc(DATA.project)}<small>канон</small></h1><span class="spacer"></span>${badge}</header>
+    ${stepper()}<h2>Сводка</h2>${tiles()}
+    <div class="two"><div><h2>🔴 Задачи со сроком</h2><div class="list">${rows(reds.map(([d, t]) => [d, due(t) + esc(t.text)]))}</div></div>
+      <div><h2>❓ Открыто — нужен ответ</h2><div class="list">${rows(M.flatMap(m => m.open.map(x => [m.dir, esc(x)])))}</div></div></div>
+    <h2>Модули</h2>${layers()}
+    <div class="two"><div><h2>Архив · последнее</h2><div class="list">${rows(DATA.archive.map(a => [a.date + " " + a.module, esc(a.text)]))}</div></div>
+      <div><h2>Валидатор</h2><div class="list">${rows([...chk.errors.map(e => ["ошибка", `<span class="msg err">${esc(e)}</span>`]),
+        ...chk.warnings.map(w => ["внимание", `<span class="msg warn">${esc(w)}</span>`])])}</div></div></div>`;
+}
+render();
+</script>
+</body>
+</html>

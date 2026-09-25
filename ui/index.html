@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MTS Link Загрузчик</title>
+<link rel="stylesheet" href="style.css">
+<script type="module" src="app.js"></script>
+</head>
+<body>
+<div class="wrap">
+  <header><h1>MTS Link <b>→</b> файл</h1><span>записи вебинаров: аудио, видео или всё вместе</span></header>
+
+  <form class="panel" id="form">
+    <input type="url" id="url" placeholder="https://my.mts-link.ru/j/…/record-new/…" autocomplete="off" required>
+    <div class="controls">
+      <div class="seg" id="modes">
+        <button type="button" data-mode="audio">Только аудио</button>
+        <button type="button" data-mode="av">Видео + аудио</button>
+        <button type="button" data-mode="video">Только видео</button>
+      </div>
+      <label class="field" id="qualityField" hidden>Качество <select id="quality"><option value="best">Лучшее</option></select></label>
+      <label class="field" title="Сервер MTS Link режет ~11 КБ/с на соединение, поэтому качаем во много потоков">Потоков <input type="number" id="workers" min="1" max="256" value="64"></label>
+      <div class="spacer"></div>
+      <button class="primary" id="go">Скачать</button>
+    </div>
+    <div class="picker" id="picker" hidden></div>
+    <div class="form-err" id="formErr"></div>
+  </form>
+
+  <h2>Сейчас</h2>
+  <div id="active"></div>
+
+  <h2>История</h2>
+  <div id="history"></div>
+</div>
+
+<div class="player" id="player">
+  <div class="player-in">
+    <div class="pt" id="playerTitle"></div>
+    <audio id="audio" controls preload="none"></audio>
+    <button class="ghost" id="playerClose" title="Закрыть">✕</button>
+  </div>
+</div>
+</body>
+</html>
