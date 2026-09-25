@@ -12,6 +12,9 @@
 - `server/` — БЭКЕНД: FastAPI, фоновые задачи, history.json, caffeinate
 - `ui/` — ФРОНТЕНД: интерфейс загрузчика (ES-модули, без сборки)
 - `scripts/` — БЭКЕНД: окружение и запуск (start.command, scripts/*.sh, venv)
+- `rust-core/`, `rust-cli/`, `rust-server/` — БЭКЕНД, `rust-ui/` — ФРОНТЕНД: канон публичного Rust-проекта
+  `../webinarip/` (github nilysenok/webinarip, MIT). Код там, здесь только `_ctx.md`.
+  В публичный репо не попадает ничего отсюда; никаких упоминаний ИИ, автор — Nikita Lysenok.
 
 ## Команды
 - Python только из venv: `.venv/bin/python` (системный `python3` из Homebrew сломан — см. scripts/_ctx.md)
@@ -20,6 +23,7 @@
 - Только тесты: `.venv/bin/python -m unittest discover -s tests`
 - Дашборд загрузчика: `./start.command` (двойной клик в Finder) → http://127.0.0.1:8765
 - Длинная загрузка из терминала: `scripts/download.sh "<ссылка>" --mode audio`
+- webinarip: `cd ../webinarip && cargo test --release && cargo build --release` → `target/release/webinarip`
 
 ## По ходу
 - Одна сессия — один модуль. Сначала план, потом код. Тесты обязательны.
