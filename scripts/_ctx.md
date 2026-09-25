@@ -8,6 +8,7 @@
 ## КОНТРАКТ
 - `start.command` (корень) — двойной клик в Finder: найти рабочий Python 3.10+, создать `.venv`, поставить `requirements.txt`, поднять сервер, открыть браузер; если сервер уже жив — просто открыть
 - `scripts/download.sh <ссылка> [--mode …]` — CLI-загрузка под `caffeinate -i`
+- `scripts/bench.py <ссылка> --secs 60 --workers 64,256 [--http2] [--ip A,B]` — замер скорости сегментов без записи на диск; `--http2` требует `pip install h2` (в requirements нет — HTTP/2 проигрывает)
 - `requirements.txt`: fastapi, uvicorn, httpx; внешняя зависимость — `ffmpeg`/`ffprobe` (Homebrew)
 - `xtask.py` + `tools/` — сборщик и валидатор канона; `tests/` — unittest
 - git: приватный GitHub `mts-link-downloader`; в git не идут `.venv/`, `downloads/`, `tracks/`, `history.json`
