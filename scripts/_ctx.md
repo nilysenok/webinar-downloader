@@ -11,7 +11,7 @@
 - `scripts/bench.py <ссылка> --secs 60 --workers 64,256 [--http2] [--ip A,B]` — замер скорости сегментов без записи на диск; `--http2` требует `pip install h2` (в requirements нет — HTTP/2 проигрывает)
 - `requirements.txt`: fastapi, uvicorn, httpx; внешняя зависимость — `ffmpeg`/`ffprobe` (Homebrew)
 - `xtask.py` + `tools/` — сборщик и валидатор канона; `tests/` — unittest
-- git: приватный GitHub `mts-link-downloader`; в git не идут `.venv/`, `downloads/`, `tracks/`, `history.json`
+- git: приватный GitHub `nilysenok/mts-link-downloader` (origin, push после каждой сессии); в git не идут `.venv/`, `downloads/`, `tracks/`, `history.json`
 
 ## ИНВАРИАНТЫ
 - Python для проекта — только `.venv/bin/python` (3.12)
@@ -32,7 +32,7 @@
 Ъ — репозиторий: приватный GitHub `mts-link-downloader` (25.09)
 
 ## ЖДУНЫ
-⏳ владелец → `! gh auth login` в этой сессии: gh 2.67.0 установлен, но не авторизован (`~/.config/gh` нет, проверено 25.09 трижды); без него нет бэкапа ни одного репо, с 25.09
+—
 
 ## ОТКРЫТО
 ❓ куда копировать `downloads/` для бэкапа (второй диск / облако) и нужно ли вообще
