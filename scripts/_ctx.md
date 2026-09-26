@@ -11,10 +11,13 @@
 - `scripts/bench.py <ссылка> --secs 60 --workers 64,256 [--http2] [--ip A,B]` — замер скорости сегментов без записи на диск; `--http2` требует `pip install h2` (в requirements нет — HTTP/2 проигрывает)
 - `requirements.txt`: fastapi, uvicorn, httpx; внешняя зависимость — `ffmpeg`/`ffprobe` (Homebrew)
 - `xtask.py` + `tools/` — сборщик и валидатор канона; `tests/` — unittest
+- `scripts/asr/` — замер распознавания речи (этап 9): `setup.sh` (whisper-cpp, `.venv-asr` с mlx-whisper, модели в `~/.cache`) → `tracks.sh <ссылка>` → `vad.py` → `run_cpp.sh` / `run_mlx.py` → `merge.py cpp|mlx` → `score.py cpp mlx`; `etalon.py` и `diff10.py` не перезаписывают выверенное без `--force`; всё одной строкой — `run_all.sh <ссылка>`
 - git: приватный GitHub `nilysenok/mts-link-downloader` (origin, push после каждой сессии); в git не идут `.venv/`, `downloads/`, `tracks/`, `history.json`
 
 ## ИНВАРИАНТЫ
-- Python для проекта — только `.venv/bin/python` (3.12)
+- Python для проекта — только `.venv/bin/python` (3.12); исключение — `.venv-asr/` только для mlx-whisper (тянет torch)
+- модели и всё долгоживущее — в `~/.cache`, результаты — в `downloads/`; временная папка сессии — не хранилище
+- настоящие стенограммы, звук и эталон — только в `downloads/asr/` (персональные данные); в тестах — только «Спикер N»
 - всё, что должно выполниться без человека, — одной строкой в `scripts/*.sh`
 
 ## СТАТУС
@@ -24,6 +27,7 @@
 - [ ] бэкап `downloads/` на второй носитель (урок Hustle: диск без копии — не диск) — куда? см. ОТКРЫТО
 
 ## ТЕХДОЛГ
+- клиент Hugging Face (`snapshot_download`) завис на 1,23 из 1,61 ГБ (26.09) — `setup.sh` качает через `curl -C -` с проверкой sha256
 - Homebrew `python@3.13` 3.13.7 сломан: бинарник `python3.13` — пустой файл 0 байт, `python3` молча ничего не делает (25.09). Лечится `brew reinstall python@3.13`; проект живёт на 3.12, поэтому не чиним
 - `caffeinate -i` не спасает от сна при закрытой крышке — крышку во время длинной загрузки не закрывать
 

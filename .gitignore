@@ -1,4 +1,5 @@
 .venv/
+.venv-asr/
 __pycache__/
 *.pyc
 downloads/
