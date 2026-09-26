@@ -48,6 +48,12 @@
    "state": "готово",
    "title": "webinarip · релиз v0.1.0",
    "desc": "README ru/en, бенчмарк, CI cargo-dist, публикация под nilysenok"
+  },
+  {
+   "n": 9,
+   "state": "сейчас",
+   "title": "webinarip · стенограмма с именами спикеров",
+   "desc": "каждая дорожка = человек, mlx-whisper на Apple Silicon; сначала разведка и план с критерием остановки; в тестах и README только демо-имена"
   }
  ],
  "modules": [
@@ -523,8 +529,6 @@
  ],
  "check": {
   "errors": [],
-  "warnings": [
-   "roadmap.md: этапов [сейчас] 0, ожидается ровно один (одна черепаха)"
-  ]
+  "warnings": []
  }
 }
