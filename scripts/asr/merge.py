@@ -1,6 +1,6 @@
 """Engine output -> one transcript on the recording timeline, with hallucination and echo checks.
 
-Usage: .venv/bin/python scripts/asr/merge.py cpp|mlx
+Usage: .venv/bin/python scripts/asr/merge.py cpp|mlx|rs   (rs, mlx: speech/<engine>/NN.json)
 Output: downloads/asr/transcript-<engine>.txt, lines '[H:MM:SS] Имя: текст'.
 """
 import difflib
@@ -31,7 +31,7 @@ def load(engine, n):
         p = f"{sp}/cpp/{n}.wav.json"
         rows = json.load(open(p))["transcription"] if os.path.exists(p) else []
         return [(s["offsets"]["from"] / 1000, s["offsets"]["to"] / 1000, s["text"]) for s in rows]
-    p = f"{sp}/mlx/{n}.json"
+    p = f"{sp}/{engine}/{n}.json"  # mlx-whisper, whisper-rs: [{start, end, text}]
     return [(s["start"], s["end"], s["text"]) for s in json.load(open(p))] if os.path.exists(p) else []
 
 
