@@ -12,6 +12,13 @@ GGML = f"{CACHE}/whisper.cpp/ggml-large-v3-turbo.bin"
 SILERO = f"{CACHE}/whisper.cpp/ggml-silero-v5.1.2.bin"
 MLX_MODEL = f"{CACHE}/mlx-whisper/whisper-large-v3-turbo"
 WINDOWS = {"A": 1300, "B": 4420, "C": 4630}  # reference pieces, 2 min each (26.09)
+
+
+def windows():
+    """Reference pieces: the blind reference's key (27.09, 7 pieces) when it exists."""
+    import json
+    p = f"{ROOT}/etalon/.key.json"
+    return json.load(open(p))["windows"] if os.path.exists(p) else WINDOWS
 LINE = re.compile(r"\[(\d+):(\d+):(\d+)\] ([^:]+): (.*)")
 
 

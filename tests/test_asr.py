@@ -5,6 +5,10 @@ import unittest
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "scripts", "asr"))
 from common import align, attribution, fmt, norm, parse, speaker_wer, to_global, trim, words  # noqa: E402
+from etalon2 import merge  # noqa: E402
+from score import unresolved  # noqa: E402
+import random  # noqa: E402
+import tempfile  # noqa: E402
 
 
 def w(text, speaker="Спикер 1", t=0):
@@ -68,6 +72,29 @@ class TestScoring(unittest.TestCase):
         ref = w("добрый день коллеги", "Спикер 1")
         hyp = w("добрый день", "Спикер 1") + w("коллеги", "Спикер 2")
         self.assertEqual(attribution(ref, hyp), (2, 3))
+
+
+class TestBlindDraft(unittest.TestCase):
+    def test_agreement_is_plain_and_differences_are_bracketed(self):
+        a = [(10, "Спикер 1", "Добрый день, коллеги.")]
+        b = [(10, "Спикер 1", "Добрый вечер, коллеги.")]
+        key = []
+        out = " ".join(tok for _, tok in merge(a, b, random.Random(1), key))
+        self.assertIn("Добрый", out)
+        self.assertIn("коллеги.", out)
+        self.assertTrue("[день, / вечер,]" in out or "[вечер, / день,]" in out, out)
+        self.assertEqual(len(key), 1)
+
+    def test_a_missing_phrase_shows_as_a_dash(self):
+        key = []
+        out = " ".join(tok for _, tok in merge([(5, "Спикер 1", "Да.")], [], random.Random(1), key))
+        self.assertTrue(out in ("[Да. / —]", "[— / Да.]"), out)
+
+    def test_unresolved_spots_are_found(self):
+        with tempfile.NamedTemporaryFile("w", suffix=".txt", delete=False) as f:
+            f.write("# [шапка / не считается]\n[0:00:01] Спикер 1: Да [а / б] нет\n[0:00:02] Спикер 2: всё выбрано\n")
+        self.assertEqual(len(unresolved(f.name)), 1)
+        os.remove(f.name)
 
 
 if __name__ == "__main__":
