@@ -77,7 +77,7 @@ def merge(a_rows, b_rows, rnd, key):
         x, y = " ".join(w for _, w in a[i1:i2]) or "—", " ".join(w for _, w in b[j1:j2]) or "—"
         t = a[i1][0] if i2 > i1 else b[j1][0]
         swap = rnd.random() < 0.5
-        key.append({"time": t, "first": "b" if swap else "a"})
+        key.append({"time": t, "first": "b" if swap else "a", "a": x, "b": y})
         out.append((t, f"[{y} / {x}]" if swap else f"[{x} / {y}]"))
     return out
 
