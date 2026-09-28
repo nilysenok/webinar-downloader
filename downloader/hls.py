@@ -6,6 +6,7 @@ from urllib.parse import urljoin
 
 import httpx
 
+from .boxes import video_size
 from .config import API, RETRIES
 from .models import Track
 
@@ -144,5 +145,28 @@ async def analyze(client, url, job=None):
                 job.add_log("warn", f"{t.name}: не удалось прочитать плейлист ({text})")
             continue
         parse_master(t, h, text)
+    await asyncio.gather(*(_probe_video(client, t, job) for t in tracks if t.variants))
     return {"sid": sid, "title": rec.get("name") or sid, "date": (rec.get("createAt") or "")[:10],
             "duration": float(rec.get("duration") or 0), "tracks": tracks}
+
+
+async def _probe_video(client, t: Track, job=None):
+    """Оставляет только варианты, где в init-сегменте есть видео, с настоящим размером кадра.
+
+    RESOLUTION в master не верим: у дорожки без камеры там тоже 640×480 (см. boxes.py).
+    Не удалось проверить — вариант остаётся как заявлен, склейка потом пропустит пустой.
+    """
+    async def real(v):
+        text = (await fetch(client, v["uri"], job)).decode()
+        if "#EXT-X-MAP" not in text:
+            return v
+        size = video_size(await fetch(client, parse_media(v["uri"], text)[0], job))
+        return v | {"width": size[0], "height": size[1]} if size else None
+
+    got = await asyncio.gather(*(real(v) for v in t.variants), return_exceptions=True)
+    if cancelled := next((g for g in got if isinstance(g, Cancelled)), None):
+        raise cancelled
+    if job and any(isinstance(g, Exception) for g in got):
+        job.add_log("warn", f"{t.name}: не удалось проверить видеопоток, берём как заявлен")
+    kept = [v if isinstance(g, Exception) else g for v, g in zip(t.variants, got)]
+    t.variants = sorted((v for v in kept if v), key=lambda v: (v["height"], v["bandwidth"]), reverse=True)

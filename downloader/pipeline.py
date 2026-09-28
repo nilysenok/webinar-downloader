@@ -7,6 +7,8 @@ from pathlib import Path
 import httpx
 
 from .config import DOWNLOADS, MODES, TIMEOUT, UA
+from . import gallery
+from .boxes import video_size
 from .hls import Cancelled, analyze, fetch, parse_media, pick_variant
 from .media import concat, mix_audio, mux_video
 from .models import Job
@@ -84,7 +86,7 @@ async def _prepare(job: Job, client):
                 t.video, t.height = True, pick_variant(t.variants, job.quality)["height"]
         if not any(t.video for t in tracks):
             raise RuntimeError("Не выбран ни один видеопоток")
-    if want_audio and not any(t.has_audio for t in tracks):
+    if job.mode != "video" and not any(t.has_audio for t in tracks):
         raise RuntimeError("В записи нет аудиодорожек")
     job.tracks = tracks
     job.add_log("info", f"«{job.title}», {job.duration / 60:.1f} мин, медиасессий {len(tracks)}"
@@ -146,12 +148,12 @@ async def _drain(job: Job, client, queue):
 
 
 async def _assemble(job: Job, tracks, files):
-    want_audio, want_video = job.wants()
+    _, want_video = job.wants()
     folder, base = Path(job.folder), sanitize(job.title)
     mix = None
-    if want_audio:
+    inputs = [(files[(t.id, "a")], t.start) for t in tracks if (t.id, "a") in files]
+    if inputs:
         job.status = "mix"
-        inputs = [(files[(t.id, "a")], t.start) for t in tracks if (t.id, "a") in files]
         job.add_log("info", f"Сведение {len(inputs)} аудиодорожек")
         mix = folder / f"{base}.mp3" if job.mode == "audio" else job.work / "mix.m4a"
         await mix_audio(job, inputs, mix)
@@ -162,12 +164,28 @@ async def _assemble(job: Job, tracks, files):
         await _mux_all(job, [t for t in tracks if t.video], files, mix, folder, base)
 
 
+def _has_video(path: Path) -> bool:
+    with open(path, "rb") as f:
+        return video_size(f.read(1 << 16)) is not None  # init в начале склеенного файла
+
+
 async def _mux_all(job: Job, vids, files, mix, folder: Path, base: str):
-    job.status, job.mux_total = "mux", len(vids)
+    """Видео каждого по отдельности (без перекодирования), затем общий экран."""
+    for t in [t for t in vids if not _has_video(files[(t.id, "v")])]:
+        job.add_log("warn", f"{t.name} {hms(t.start)}: в потоке нет видео (камера выключена) — пропущено")
+        vids.remove(t)
+    job.status, job.mux_total = "mux", len(vids) + (job.gallery and bool(vids))
+    own = mix if job.mode == "av" else None  # «Только видео»: отдельные файлы без звука
     for n, t in enumerate(vids, 1):
-        label = f"{t.name}{' (экран)' if t.kind == 'screen' else ''} {hms(t.start)} {t.height}p"
-        out = folder / sanitize(f"{base} — {label}.mp4")
+        out = folder / sanitize(f"{base} — {gallery.label(t)} {hms(t.start)} {t.height}p.mp4")
         job.add_log("info", f"Склейка видео {n}/{len(vids)}: {t.name}")
-        await mux_video(job, files[(t.id, "v")], out, mix, t.start)
+        await mux_video(job, files[(t.id, "v")], out, own, t.start)
         job.outputs.append({"path": str(out), "size": out.stat().st_size})
         job.mux_done = n
+    if job.mux_total > len(vids):
+        out = folder / sanitize(f"{base} — общий экран.mp4")
+        job.add_log("info", f"Общий экран: {len(gallery.people(vids))} участн. с камерой, перекодирование в H.264")
+        await gallery.render(job, vids, {t.id: files[(t.id, "v")] for t in vids}, mix, out,
+                             on_time=lambda s: setattr(job, "mux_done", len(vids) + min(s / job.duration, 1)))
+        job.outputs.append({"path": str(out), "size": out.stat().st_size})
+        job.mux_done = job.mux_total

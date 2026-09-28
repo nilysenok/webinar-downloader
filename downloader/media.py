@@ -16,10 +16,12 @@ def concat(paths, out: Path):
     tmp.replace(out)
 
 
-async def ffmpeg(job, args, on_time=None):
+async def ffmpeg(job, args, on_time=None, cwd=None):
     """Запуск ffmpeg с отслеживанием прогресса (-progress) и отменой задачи."""
     cmd = ["ffmpeg", "-y", "-hide_banner", "-loglevel", "error", "-nostats", "-progress", "pipe:1", *map(str, args)]
-    proc = await asyncio.create_subprocess_exec(*cmd, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE)
+    proc = await asyncio.create_subprocess_exec(*cmd, stdout=asyncio.subprocess.PIPE,
+                                                stderr=asyncio.subprocess.PIPE, cwd=cwd)
+    err = asyncio.create_task(proc.stderr.read())  # читаем сразу: полный канал stderr остановит ffmpeg
     async for line in proc.stdout:
         if job.cancel:
             proc.terminate()
@@ -28,16 +30,16 @@ async def ffmpeg(job, args, on_time=None):
         key, _, val = line.decode().strip().partition("=")
         if on_time and key == "out_time_us" and val.isdigit():
             on_time(int(val) / 1e6)
-    err = await proc.stderr.read()
     if await proc.wait():
-        raise RuntimeError("ffmpeg: " + err.decode(errors="replace").strip()[-500:])
+        raise RuntimeError("ffmpeg: " + (await err).decode(errors="replace").strip()[-500:])
+    await err
 
 
-async def _to_file(job, args, out: Path, on_time=None):
+async def _to_file(job, args, out: Path, on_time=None, cwd=None):
     """ffmpeg пишет во временный файл; при сбое/отмене он удаляется, при успехе — переименовывается."""
     tmp = out.with_name(f"{out.stem}.part{out.suffix}")
     try:
-        await ffmpeg(job, [*args, tmp], on_time)
+        await ffmpeg(job, [*args, tmp], on_time, cwd)
     except BaseException:
         tmp.unlink(missing_ok=True)
         raise

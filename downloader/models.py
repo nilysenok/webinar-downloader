@@ -32,6 +32,7 @@ class Job:
     quality: str = "best"
     streams: list = field(default_factory=list)  # id медиасессий, чьё видео качать
     workers: int = DEFAULT_WORKERS
+    gallery: bool = True  # в режимах с видео — ещё общий экран всех камер (gallery.py)
     id: str = field(default_factory=lambda: uuid.uuid4().hex[:8])
     status: str = "queued"  # queued|meta|download|mix|mux|done|error|cancelled|interrupted
     title: str = ""
@@ -71,8 +72,9 @@ class Job:
         return Path(self.folder) / WORK_DIR if self.folder else None
 
     def wants(self):
-        """(нужно ли аудио, нужно ли видео) для режима задачи."""
-        return self.mode in ("audio", "av"), self.mode in ("av", "video")
+        """(качать ли аудио, качать ли видео). Общему экрану нужен общий звук — и в «Только видео»."""
+        video = self.mode in ("av", "video")
+        return self.mode in ("audio", "av") or (video and self.gallery), video
 
     def add_log(self, level, msg):
         self.log.append({"t": time.time(), "level": level, "msg": msg})
