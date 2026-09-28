@@ -7,7 +7,7 @@ import unittest
 from pathlib import Path
 from unittest import mock
 
-from downloader import Job, gallery, hls, pipeline
+from downloader import Job, gallery, hls, pipeline, tiles
 from downloader.boxes import video_size
 from downloader.models import Track
 
@@ -59,22 +59,6 @@ class ProbeTest(unittest.TestCase):
         self.assertEqual(Job("u", mode="audio").wants(), (True, False))
 
 
-class GridTest(unittest.TestCase):
-    def test_layouts(self):
-        self.assertEqual(gallery.grid(1), [(2, 2, 1276, 716)])  # один — на весь экран
-        three = gallery.grid(3)
-        self.assertEqual(three[2][0], (gallery.W - three[2][2]) // 2)  # неполный ряд — по центру
-        for n in range(1, 20):
-            for x, y, w, h in gallery.grid(n):
-                self.assertTrue(x >= 0 and y >= 0 and x + w <= gallery.W and y + h <= gallery.H, n)
-                self.assertEqual((w % 2, h % 2), (0, 0))
-
-    def test_one_tile_per_person(self):
-        ts = [Track(1, "Анна", 9, 1), Track(2, "Илья", 5, 1), Track(3, "Анна", 1, 1), Track(4, "Анна", 2, 1, kind="screen")]
-        self.assertEqual([(who, [t.id for t in g]) for who, g in gallery.people(ts)],
-                         [("Анна", [3, 1]), ("Анна (экран)", [4]), ("Илья", [2])])
-
-
 def ff(*args):
     subprocess.run(["ffmpeg", "-y", "-loglevel", "error", *map(str, args)], check=True)
 
@@ -86,32 +70,50 @@ def pixel(path: Path, t: float, x: int, y: int):
     return tuple(out[:3])
 
 
+def sine(p: Path, seconds: float, talk=None):
+    """Звук дорожки: тишина, а в talk=(a, b) — тон громче порога речи."""
+    vol = f"volume='between(t,{talk[0]},{talk[1]})':eval=frame" if talk else "volume=0"
+    ff("-f", "lavfi", "-i", f"sine=frequency=440:duration={seconds}", "-af", vol, "-c:a", "aac", p)
+
+
+def vp9(p: Path, seconds: float, color: str, size="320x180"):
+    ff("-f", "lavfi", "-i", f"color=c={color}:s={size}:r=25:d={seconds}", "-c:v", "libvpx-vp9", "-deadline", "realtime",
+       "-movflags", "frag_keyframe+empty_moov", p)
+
+
 @unittest.skipUnless(shutil.which("ffmpeg"), "нужен ffmpeg")
 class RenderTest(unittest.TestCase):
-    def test_skips_videoless_stream_and_renders_gallery(self):
+    def test_camera_speaker_and_empty_screen(self):
+        """Анна с камерой 0–20 с; никого 20–39; Илья без камеры говорит 40–45 → плитка с именем и рамкой."""
         with tempfile.TemporaryDirectory() as tmp:
             d = Path(tmp) / "it's 1:2"  # кавычка и двоеточие в пути не ломают граф фильтров
             (d / "_work").mkdir(parents=True)
-            frag = ["-movflags", "frag_keyframe+empty_moov"]
-            ff("-f", "lavfi", "-i", "color=c=red:s=320x180:r=25:d=2", "-c:v", "libx264", *frag, d / "v.mp4")
-            ff("-f", "lavfi", "-i", "sine=d=2", "-c:a", "aac", *frag, d / "a.mp4")  # «видео» без кадров
-            ff("-f", "lavfi", "-i", "sine=d=4", "-c:a", "aac", d / "mix.m4a")
-            job = Job("u", mode="video", title="t", duration=4.0, folder=str(d))
-            tracks = [Track(1, "Анна", 1.0, 2, video=True, height=180), Track(2, "Илья", 0.0, 2, video=True)]
-            files = {(1, "v"): d / "v.mp4", (2, "v"): d / "a.mp4"}
+            vp9(d / "v.mp4", 20, "red")
+            ff("-f", "lavfi", "-i", "sine=d=2", "-c:a", "aac", "-movflags", "frag_keyframe+empty_moov", d / "nov.mp4")
+            sine(d / "a1.m4a", 20)
+            sine(d / "a2.m4a", 60, talk=(40, 45))
+            sine(d / "mix.m4a", 60, talk=(40, 45))
+            job = Job("u", mode="video", title="t", duration=60.0, folder=str(d))
+            tracks = [Track(1, "Анна", 0.0, 20, video=True, height=180), Track(2, "Илья", 0.0, 60, video=True)]
+            files = {(1, "v"): d / "v.mp4", (2, "v"): d / "nov.mp4", (1, "a"): d / "a1.m4a", (2, "a"): d / "a2.m4a"}
             asyncio.run(pipeline._mux_all(job, tracks, files, d / "mix.m4a", d, "t"))
-            self.assertIn("камера выключена", " ".join(x["msg"] for x in job.log))
-            self.assertEqual(len(job.outputs), 2)  # видео Анны + общий экран; поток Ильи пропущен
+            self.assertIn("камера выключена", " ".join(x["msg"] for x in job.log))  # «видео» Ильи без кадров
+            self.assertEqual(len(job.outputs), 2)
             out = Path(job.outputs[1]["path"])
             self.assertEqual(out.name, "t — общий экран.mp4")
             self.assertEqual(job.mux_done, job.mux_total)
-            center = (gallery.W // 2, gallery.H // 2)
-            self.assertLess(max(pixel(out, 0.5, *center)), 60)  # до начала камеры — тёмная плитка
-            r, g, b = pixel(out, 2.0, *center)
-            self.assertTrue(r > 200 and g < 60 and b < 60, (r, g, b))  # камера идёт с 1-й секунды
-            streams = subprocess.run(["ffprobe", "-v", "error", "-show_entries", "stream=codec_type", "-of", "csv=p=0",
-                                      str(out)], capture_output=True, text=True).stdout.split()
-            self.assertEqual(streams, ["video", "audio"])
+            c = (tiles.W // 2, tiles.H // 2)
+            r, g, b = pixel(out, 10, *c)
+            self.assertTrue(r > 200 and g < 60 and b < 60, (r, g, b))  # Анна на весь экран
+            self.assertLess(max(pixel(out, 30, 20, 20)), 40)  # никого — заставка
+            edge = (tiles.GAP // 2 + 2, tiles.H // 2)
+            r, g, b = pixel(out, 42, *edge)
+            self.assertTrue(g > 150 and r < 120, (r, g, b))  # Илья говорит — зелёная рамка
+            self.assertLess(max(pixel(out, 55, *edge)), 60)  # замолчал — рамки нет, плитка осталась
+            streams = subprocess.run(["ffprobe", "-v", "error", "-show_entries", "stream=codec_type:format=duration",
+                                      "-of", "csv=p=0", str(out)], capture_output=True, text=True).stdout.split()
+            self.assertEqual(streams[:2], ["video", "audio"])
+            self.assertAlmostEqual(float(streams[2]), 60.0, delta=0.2)
 
     def test_frame_size_change_inside_stream(self):
         """MTS Link меняет размер кадра посреди потока; без -reinit_filter 0 граф пересобирался с нуля."""
@@ -126,15 +128,12 @@ class RenderTest(unittest.TestCase):
                d / "v.mp4")
             job = Job("u", duration=40.0, folder=str(d))
             out = d / "g.mp4"
-            asyncio.run(gallery.render(job, [Track(1, "Анна", 30.0, 6)], {1: d / "v.mp4"}, None, out))
-            c = (gallery.W // 2, gallery.H // 2)
+            asyncio.run(gallery.render(job, [Track(1, "Анна", 30.0, 6)], {1: d / "v.mp4"}, {}, None, out))
+            c = (tiles.W // 2, tiles.H // 2)
             self.assertGreater(pixel(out, 31.0, *c)[0], 200)  # красный 640×360
             self.assertGreater(pixel(out, 33.0, *c)[2], 200)  # синий 320×180
             self.assertGreater(pixel(out, 35.0, *c)[0], 200)  # снова красный, 1280×720
-            self.assertLess(max(pixel(out, 10.0, *c)), 60)
-            dur = subprocess.run(["ffprobe", "-v", "error", "-show_entries", "format=duration", "-of", "csv=p=0", str(out)],
-                                 capture_output=True, text=True).stdout
-            self.assertAlmostEqual(float(dur), 40.0, delta=0.2)
+            self.assertLess(max(pixel(out, 10.0, 20, 20)), 60)
 
 
 if __name__ == "__main__":

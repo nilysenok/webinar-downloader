@@ -46,6 +46,18 @@ async def _to_file(job, args, out: Path, on_time=None, cwd=None):
     tmp.replace(out)
 
 
+async def duration(path: Path) -> float:
+    """Длительность файла по ffprobe; 0, если не прочиталась."""
+    proc = await asyncio.create_subprocess_exec("ffprobe", "-v", "error", "-show_entries", "format=duration",
+                                                "-of", "csv=p=0", str(path), stdout=asyncio.subprocess.PIPE,
+                                                stderr=asyncio.subprocess.DEVNULL)
+    out, _ = await proc.communicate()
+    try:
+        return float(out.decode().strip())
+    except ValueError:
+        return 0.0
+
+
 def mix_filter(starts, duration):
     """Дорожки звучат одновременно → сводим amix со сдвигом каждой на её relativeTime.
 

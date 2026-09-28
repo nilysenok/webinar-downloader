@@ -161,7 +161,7 @@ async def _assemble(job: Job, tracks, files):
         if job.mode == "audio":
             job.outputs.append({"path": str(mix), "size": mix.stat().st_size})
     if want_video:
-        await _mux_all(job, [t for t in tracks if t.video], files, mix, folder, base)
+        await _mux_all(job, tracks, files, mix, folder, base)
 
 
 def _has_video(path: Path) -> bool:
@@ -169,8 +169,9 @@ def _has_video(path: Path) -> bool:
         return video_size(f.read(1 << 16)) is not None  # init в начале склеенного файла
 
 
-async def _mux_all(job: Job, vids, files, mix, folder: Path, base: str):
+async def _mux_all(job: Job, tracks, files, mix, folder: Path, base: str):
     """Видео каждого по отдельности (без перекодирования), затем общий экран."""
+    vids = [t for t in tracks if t.video]
     for t in [t for t in vids if not _has_video(files[(t.id, "v")])]:
         job.add_log("warn", f"{t.name} {hms(t.start)}: в потоке нет видео (камера выключена) — пропущено")
         vids.remove(t)
@@ -184,8 +185,8 @@ async def _mux_all(job: Job, vids, files, mix, folder: Path, base: str):
         job.mux_done = n
     if job.mux_total > len(vids):
         out = folder / sanitize(f"{base} — общий экран.mp4")
-        job.add_log("info", f"Общий экран: {len(gallery.people(vids))} участн. с камерой, перекодирование в H.264")
-        await gallery.render(job, vids, {t.id: files[(t.id, "v")] for t in vids}, mix, out,
+        audios = {t.id: files[(t.id, "a")] for t in tracks if (t.id, "a") in files}
+        await gallery.render(job, tracks, {t.id: files[(t.id, "v")] for t in vids}, audios, mix, out,
                              on_time=lambda s: setattr(job, "mux_done", len(vids) + min(s / job.duration, 1)))
         job.outputs.append({"path": str(out), "size": out.stat().st_size})
         job.mux_done = job.mux_total
