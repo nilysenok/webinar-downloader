@@ -2,6 +2,8 @@
 # Двойной клик в Finder: поднимает локальный сервер и открывает дашборд в браузере.
 cd "$(dirname "$0")" || exit 1
 export PATH="/opt/homebrew/bin:/usr/local/bin:$PATH"
+# ffmpeg-full (с drawtext — имена на общем экране) Homebrew не кладёт в PATH — берём его первым, если он есть
+for d in /opt/homebrew/opt/ffmpeg-full/bin /usr/local/opt/ffmpeg-full/bin; do [ -x "$d/ffmpeg" ] && PATH="$d:$PATH"; done
 PORT="${PORT:-8765}"
 URL="http://127.0.0.1:$PORT"
 

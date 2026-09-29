@@ -29,7 +29,7 @@ def rows(engine):
 
 def overlap_secs(s):
     """Seconds in [s, s+LEN) where two or more tracks have speech (VAD pieces, speech/map.json)."""
-    maps = json.load(open(f"{ROOT}/speech/map.json"))
+    maps = json.load(open(f"{ROOT}/speech/map.json", encoding="utf-8"))
     on = collections.Counter()
     for m in maps.values():
         for a, b, src in m["map"]:
@@ -105,12 +105,12 @@ def main(ea, eb):
         if os.path.exists(f"{out}/{k}.txt") and not os.path.exists(f"{out}/{k}.v1.txt"):
             shutil.copy(f"{out}/{k}.txt", f"{out}/{k}.v1.txt")
         key[k] = []
-        with open(f"{out}/{k}.txt", "w") as f:
+        with open(f"{out}/{k}.txt", "w", encoding="utf-8") as f:
             f.write(draft(k, s, ea, eb, rnd, key[k]))
         if not os.path.exists(f"{out}/{k}.mp3"):
             subprocess.run(["ffmpeg", "-v", "error", "-y", "-ss", str(s), "-t", str(LEN), "-i", mp3, "-c", "copy", f"{out}/{k}.mp3"])
         print(k, fmt(s), f"спорных мест {len(key[k])}", f"двое сразу {overlap_secs(s)} с")
-    json.dump({"engines": {"a": ea, "b": eb}, "windows": windows, "spots": key}, open(f"{out}/.key.json", "w"), ensure_ascii=False)
+    json.dump({"engines": {"a": ea, "b": eb}, "windows": windows, "spots": key}, open(f"{out}/.key.json", "w", encoding="utf-8"), ensure_ascii=False)
 
 
 if __name__ == "__main__":

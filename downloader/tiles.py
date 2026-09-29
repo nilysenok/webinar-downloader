@@ -5,7 +5,7 @@
 """
 import math
 
-from .osdeps import filter_path, font
+from .osdeps import filter_path, font, has_filter
 
 W, H, FPS = 1280, 720, 25
 BG, TILE, TALK, GAP = "0x111111", "0x262626", "0x2fd26b", 4
@@ -28,7 +28,8 @@ def grid(n: int):
 
 def text(textfile: str, size: int, center: bool) -> str:
     """Подпись: снизу слева, если есть видео; крупно по центру — у плитки без камеры и на заставке."""
-    if not (f := font()):  # нет шрифта с кириллицей — без подписей, но видео соберётся
+    # нет шрифта с кириллицей или ffmpeg собран без drawtext — без подписей, но видео соберётся
+    if not (f := font()) or not has_filter("drawtext"):
         return "null"
     where = "x=(w-tw)/2:y=(h-th)/2" if center else "x=12:y=h-th-12"
     return (f"drawtext=fontfile='{filter_path(f)}':textfile={textfile}:expansion=none:fontsize={size}:fontcolor=white"

@@ -50,7 +50,7 @@ def main(engine):
     os.makedirs(out, exist_ok=True)
     for k, s in pick(rows).items():
         subprocess.run(["ffmpeg", "-v", "error", "-y", "-ss", str(s), "-t", str(LEN), "-i", mp3, "-c", "copy", f"{out}/{k}.mp3"])
-        with open(f"{out}/{k}.txt", "w") as f:
+        with open(f"{out}/{k}.txt", "w", encoding="utf-8") as f:
             f.write(f"# Кусок {k}: {fmt(s)} — 2 минуты. Исправьте текст и имена прямо здесь, сохраните файл.\n\n")
             f.writelines(line for line, p in zip(lines, map(parse, lines)) if p and s <= p[0] < s + LEN)
         shutil.copy(f"{out}/{k}.txt", f"{out}/{k}.draft-{engine}.txt")

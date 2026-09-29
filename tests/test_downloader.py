@@ -84,7 +84,7 @@ class FolderTest(unittest.TestCase):
 
     def test_work_inside_folder(self):
         j = Job("u", folder="/d/2026-09-25_1638 X")
-        self.assertEqual(str(j.work), "/d/2026-09-25_1638 X/_work")
+        self.assertEqual(j.work, Path("/d/2026-09-25_1638 X/_work"))
 
 
 class JobTest(unittest.TestCase):

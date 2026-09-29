@@ -91,7 +91,7 @@ class TestBlindDraft(unittest.TestCase):
         self.assertTrue(out in ("[Да. / —]", "[— / Да.]"), out)
 
     def test_unresolved_spots_are_found(self):
-        with tempfile.NamedTemporaryFile("w", suffix=".txt", delete=False) as f:
+        with tempfile.NamedTemporaryFile("w", suffix=".txt", delete=False, encoding="utf-8") as f:
             f.write("# [шапка / не считается]\n[0:00:01] Спикер 1: Да [а / б] нет\n[0:00:02] Спикер 2: всё выбрано\n")
         self.assertEqual(len(unresolved(f.name)), 1)
         os.remove(f.name)

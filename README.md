@@ -19,11 +19,13 @@
 ### macOS
 
 ```bash
-brew install ffmpeg python@3.12          # Homebrew: https://brew.sh
+brew install ffmpeg-full python@3.12     # Homebrew: https://brew.sh
 git clone https://github.com/nilysenok/webinar-downloader.git
 ```
 
 Запуск — двойной клик по **`start.command`** в Finder (или `./start.command` в Терминале).
+
+Почему `ffmpeg-full`, а не `ffmpeg`: обычный ffmpeg из Homebrew (с версии 8) собран без фильтра подписей, и на общем экране не будет имён участников. Видео соберётся и с ним, просто без имён. `start.command` находит `ffmpeg-full` сам; для работы из терминала добавьте его в PATH: `echo 'export PATH="$(brew --prefix ffmpeg-full)/bin:$PATH"' >> ~/.zshrc`.
 
 ### Windows 10/11
 
@@ -102,7 +104,7 @@ git pull
 | В дашборде «Сервер недоступен» | Сервер не запущен — запустите `start.command` / `start.bat` / `start.sh` и не закрывайте его окно |
 | «Не найден ffmpeg» | macOS: `brew install ffmpeg` · Windows: `winget install Gyan.FFmpeg` · Linux: `sudo apt install ffmpeg` |
 | «Не найден Python 3.10+» | macOS: `brew install python@3.12` · Windows: `winget install Python.Python.3.12` · Linux: `sudo apt install python3 python3-venv` |
-| На общем экране нет имён (Linux) | Нет шрифта с кириллицей: `sudo apt install fonts-dejavu-core` |
+| На общем экране нет имён | macOS: `brew install ffmpeg-full` (обычный ffmpeg из Homebrew без подписей) · Linux: нет шрифта с кириллицей — `sudo apt install fonts-dejavu-core` |
 | Загрузка оборвалась | «Продолжить» в строке загрузки — докачает с места остановки |
 | Интерфейс выглядит странно после обновления | Обновите страницу с Cmd+Shift+R |
 | Отдельные видео камер не открываются в плеере | Это VP9 — откройте в браузере или VLC; «общий экран» (H.264) открывается везде |

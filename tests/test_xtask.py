@@ -16,19 +16,19 @@ def ctx(body_tasks="- [ ] 🔴 01.10 срочно\n- [ ] без срока", ext
 
 def project(tmp: Path, ctx_text: str, code_lines=10):
     (tmp / "mod").mkdir()
-    (tmp / "mod" / "_ctx.md").write_text(ctx_text)
-    (tmp / "mod" / "x.py").write_text("x = 1\n" * code_lines)
-    (tmp / "pravila.md").write_text("# Проект\n")
-    (tmp / "spec.md").write_text("# spec\n")
-    (tmp / "roadmap.md").write_text("1. [готово] Старт — было\n2. [сейчас] Канон — идёт\n")
-    (tmp / "arhiv.md").write_text("25.09 · [mod] · сделано\n")
+    (tmp / "mod" / "_ctx.md").write_text(ctx_text, encoding="utf-8")
+    (tmp / "mod" / "x.py").write_text("x = 1\n" * code_lines, encoding="utf-8")
+    (tmp / "pravila.md").write_text("# Проект\n", encoding="utf-8")
+    (tmp / "spec.md").write_text("# spec\n", encoding="utf-8")
+    (tmp / "roadmap.md").write_text("1. [готово] Старт — было\n2. [сейчас] Канон — идёт\n", encoding="utf-8")
+    (tmp / "arhiv.md").write_text("25.09 · [mod] · сделано\n", encoding="utf-8")
 
 
 class CanonTest(unittest.TestCase):
     def test_parse_ctx(self):
         with tempfile.TemporaryDirectory() as t:
             p = Path(t) / "_ctx.md"
-            p.write_text(ctx())
+            p.write_text(ctx(), encoding="utf-8")
             m = parse_ctx(p)
             self.assertEqual((m["layer"], m["status"]), ("БЭКЕНД", "в работе"))
             self.assertEqual(m["tasks"][0], {"red": True, "due": "01.10", "text": "срочно"})

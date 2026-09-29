@@ -6,6 +6,7 @@
 сборщик канона и git.
 
 ## КОНТРАКТ
+- `start.command` ставит `ffmpeg-full` (Homebrew, keg-only, с drawtext) первым в PATH, если он установлен; README для macOS советует `brew install ffmpeg-full`
 - запуск: `start.command` (macOS, Finder), `start.bat` (Windows, Проводник; winget-подсказки, UTF-8 через chcp 65001), `start.sh` (Linux и macOS из терминала; apt/dnf-подсказки) — все создают `.venv`, ставят зависимости и открывают дашборд
 - `.gitattributes`: `*.bat` — CRLF, `*.sh` / `*.command` — LF; CI `.github/workflows/tests.yml`: тесты на macOS, Windows, Ubuntu + запуск start.bat / start.sh с нуля до ответа дашборда
 - `start.command` (корень) — двойной клик в Finder: найти рабочий Python 3.10+, создать `.venv`, поставить `requirements.txt`, поднять сервер, открыть браузер; если сервер уже жив — просто открыть

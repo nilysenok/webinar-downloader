@@ -60,7 +60,7 @@ def main():
         maps[n] = {"offset": offs.get(n, 0.0), "map": speech_only(p, segs, f"{sp}/{n}.wav"), "speech": speech}
         total += speech
         print(f"{n} offset {offs.get(n, 0):8.2f}  segments {len(segs):4d}  speech {speech / 60:5.1f} min")
-    json.dump(maps, open(f"{sp}/map.json", "w"))
+    json.dump(maps, open(f"{sp}/map.json", "w", encoding="utf-8"))
     print(f"total speech {total / 60:.1f} min")
 
 

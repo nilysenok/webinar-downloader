@@ -76,6 +76,7 @@
    ],
    "status": "в работе",
    "invariants": [
+    "подписи на общем экране — только если в ffmpeg есть `drawtext` (`osdeps.has_filter`): Homebrew-ffmpeg 8+ собран без него, и общий экран падал целиком `No such filter: 'drawtext'` (найдено CI на macOS 29.09); без фильтра — видео без имён",
     "качаются только нужные HLS-рендишны (аудио `a1/…`, видео — вариант по качеству); mp4 целиком не качается",
     "сегмент пишется через `.part` + rename — недокачанный файл никогда не лежит под финальным именем",
     "перезапуск той же задачи не качает сегменты, уже лежащие в `_work/`",
@@ -382,6 +383,7 @@
    "layer": "БЭКЕНД",
    "purpose": "Окружение и запуск: venv, зависимости, двойной клик для дашборда, скрипты длинных прогонов под caffeinate, сборщик канона и git.",
    "contract": [
+    "- `start.command` ставит `ffmpeg-full` (Homebrew, keg-only, с drawtext) первым в PATH, если он установлен; README для macOS советует `brew install ffmpeg-full`",
     "- запуск: `start.command` (macOS, Finder), `start.bat` (Windows, Проводник; winget-подсказки, UTF-8 через chcp 65001), `start.sh` (Linux и macOS из терминала; apt/dnf-подсказки) — все создают `.venv`, ставят зависимости и открывают дашборд",
     "- `.gitattributes`: `*.bat` — CRLF, `*.sh` / `*.command` — LF; CI `.github/workflows/tests.yml`: тесты на macOS, Windows, Ubuntu + запуск start.bat / start.sh с нуля до ответа дашборда",
     "- `start.command` (корень) — двойной клик в Finder: найти рабочий Python 3.10+, создать `.venv`, поставить `requirements.txt`, поднять сервер, открыть браузер; если сервер уже жив — просто открыть",
@@ -538,6 +540,11 @@
   {
    "date": "29.09",
    "module": "downloader",
+   "text": "CI на трёх ОС нашёл: (1) Homebrew-ffmpeg 8+ без drawtext — общий экран падал у любого, кто ставит ffmpeg по README сегодня; теперь без фильтра видео собирается без имён, для имён — ffmpeg-full; (2) на Windows тесты писали кириллицу в cp1252 и сравнивали пути строкой с «/» — исправлено; Ubuntu прошёл с первого раза"
+  },
+  {
+   "date": "29.09",
+   "module": "downloader",
    "text": "версия для Windows и Linux: `osdeps.py` (шрифт, «не спать», показать в папке), `resource` только где есть, UTF-8 в history.json и служебных файлах ffmpeg, путь шрифта в фильтре с экранированным `C\\:`; `start.bat`, `start.sh`, README по трём ОС; CI на macOS / Windows / Ubuntu. start.sh проверен вживую на macOS (8799)"
   },
   {
@@ -589,11 +596,6 @@
    "date": "29.09",
    "module": "ui",
    "text": "доведено до продукта: видимая кнопка «Подробнее» вместо стрелки (и на телефоне), вложенный блок — «Журнал и цифры», статус под названием (обрезался до «Ош…»), ссылка в карточке в одну строку; проверено скриншотами headless Chrome на 8799: 1280 px, 390 px (через iframe — окно Chrome уже 500 px не сужается), тёмная тема, раскрытая строка, карточка живой загрузки; тест API `test_server_api.py`"
-  },
-  {
-   "date": "28.09",
-   "module": "server",
-   "text": "`POST /api/jobs`: `streams` для av/video больше не обязателен — пусто = все камеры записи"
   }
  ],
  "check": {

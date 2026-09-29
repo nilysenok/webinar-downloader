@@ -23,7 +23,7 @@ def main():
         t = time.time()
         r = mlx_whisper.transcribe(p, path_or_hf_repo=MLX_MODEL, language="ru")
         segs = [{"start": s["start"], "end": s["end"], "text": s["text"]} for s in r["segments"]]
-        json.dump(segs, open(f"{sp}/mlx/{os.path.basename(p)[:2]}.json", "w"), ensure_ascii=False)
+        json.dump(segs, open(f"{sp}/mlx/{os.path.basename(p)[:2]}.json", "w", encoding="utf-8"), ensure_ascii=False)
         print(os.path.basename(p), f"{time.time() - t:.1f}s", len(segs), flush=True)
     print(f"total {time.time() - t0:.1f}s")
 

@@ -33,6 +33,13 @@ def font() -> Path | None:
     return None
 
 
+@cache
+def has_filter(name: str) -> bool:
+    """Есть ли фильтр в этой сборке ffmpeg. Homebrew-ffmpeg 8+ собран без drawtext (подписи) — нужен ffmpeg-full."""
+    out = subprocess.run(["ffmpeg", "-hide_banner", "-filters"], capture_output=True, text=True).stdout
+    return any(ln.split()[1:2] == [name] for ln in out.splitlines())
+
+
 def filter_path(p: Path) -> str:
     """Путь для фильтра ffmpeg в одинарных кавычках: прямые слеши, двоеточие диска (C:) экранировано."""
     return p.as_posix().replace("'", r"'\''").replace(":", r"\:")

@@ -18,7 +18,7 @@ def windows():
     """Reference pieces: the blind reference's key (27.09, 7 pieces) when it exists."""
     import json
     p = f"{ROOT}/etalon/.key.json"
-    return json.load(open(p))["windows"] if os.path.exists(p) else WINDOWS
+    return json.load(open(p, encoding="utf-8"))["windows"] if os.path.exists(p) else WINDOWS
 LINE = re.compile(r"\[(\d+):(\d+):(\d+)\] ([^:]+): (.*)")
 
 

@@ -1,5 +1,6 @@
 import unittest
 from pathlib import Path
+from unittest import mock
 
 from downloader import osdeps
 
@@ -14,6 +15,16 @@ class OsDeps(unittest.TestCase):
         f = osdeps.font()
         self.assertIsNotNone(f, "на этой машине нет шрифта с кириллицей — подписи на общем экране пропадут")
         self.assertTrue(f.is_file())
+
+    def test_filter_check_is_honest(self):
+        self.assertTrue(osdeps.has_filter("null"))
+        self.assertFalse(osdeps.has_filter("no_such_filter_xyz"))
+
+    def test_no_drawtext_means_no_captions_not_a_crash(self):
+        # Homebrew-ffmpeg 8+ собран без drawtext: общий экран должен собираться, просто без имён
+        from downloader import tiles
+        with mock.patch.object(tiles, "has_filter", return_value=False):
+            self.assertEqual(tiles.text("t.txt", 30, True), "null")
 
     def test_awake_start_stop_are_idempotent(self):
         a = osdeps.Awake()

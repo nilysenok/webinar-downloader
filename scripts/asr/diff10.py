@@ -54,7 +54,7 @@ def main(ea, eb):
     if os.path.exists(f"{out}/10-mest.txt") and "--force" not in sys.argv:
         sys.exit(f"{out}/10-mest.txt уже есть — там могут быть ответы владельца; перезапись только с --force")
     os.makedirs(out, exist_ok=True)
-    with open(f"{out}/10-mest.txt", "w") as f:
+    with open(f"{out}/10-mest.txt", "w", encoding="utf-8") as f:
         for k, (_, t, sp, ta, tb) in enumerate(sorted(picked, key=lambda c: c[1]), 1):
             subprocess.run(["ffmpeg", "-v", "error", "-y", "-ss", str(max(t - 3, 0)), "-t", "14", "-i", mp3, "-c", "copy", f"{out}/{k:02d}.mp3"])
             block = f"{k:2d}. {fmt(t)}  {track[sp]}  (файл {k:02d}.mp3)\n    {ea}: {ta}\n    {eb}: {tb}\n    прав: \n\n"
