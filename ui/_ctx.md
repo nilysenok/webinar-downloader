@@ -7,6 +7,7 @@
 
 ## КОНТРАКТ
 - `ui/index.html` + `style.css` + ES-модули без сборки: `app.js` (вход, опрос, действия), `form.js`, `board.js`, `history.js`, `util.js`
+- `favicon.svg` — фавиконка: красный (`--accent` #e3262f) скруглённый квадрат, белая стрелка «скачать» в лоток; SVG, читается и в 16 px; подключена в `<head>` (тест `tests/test_ui.py`)
 - опрос `GET /api/jobs`: 1 с при активных задачах, 3 с без них
 - кнопки — через `data-act` + `data-id` и один делегированный обработчик: cancel, restart, reveal, clean, delete, play
 - localStorage: только последний режим и число потоков
