@@ -18,7 +18,7 @@ def project(tmp: Path, ctx_text: str, code_lines=10):
     (tmp / "mod").mkdir()
     (tmp / "mod" / "_ctx.md").write_text(ctx_text)
     (tmp / "mod" / "x.py").write_text("x = 1\n" * code_lines)
-    (tmp / "CLAUDE.md").write_text("# Проект\n")
+    (tmp / "pravila.md").write_text("# Проект\n")
     (tmp / "spec.md").write_text("# spec\n")
     (tmp / "roadmap.md").write_text("1. [готово] Старт — было\n2. [сейчас] Канон — идёт\n")
     (tmp / "arhiv.md").write_text("25.09 · [mod] · сделано\n")

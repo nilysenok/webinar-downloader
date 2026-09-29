@@ -65,7 +65,7 @@ def check_module(m: dict, errors, warnings):
 
 def check_closed(root: Path, modules, errors):
     """Закон 2: в живых файлах нет закрытых (✅ / [x]) строк — они живут только в arhiv.md."""
-    living = [root / "CLAUDE.md", root / "spec.md", root / "roadmap.md"] + [root / m["dir"] / "_ctx.md" for m in modules]
+    living = [root / "pravila.md", root / "spec.md", root / "roadmap.md"] + [root / m["dir"] / "_ctx.md" for m in modules]
     for p in living:
         if not p.exists():
             errors.append(f"{p.name}: файл не найден")

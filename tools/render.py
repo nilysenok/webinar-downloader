@@ -22,9 +22,9 @@ def build_data(root: Path) -> dict:
             m[key] = [_clean(x) for x in m[key]]
         for key in ("order", "bad_tasks", "lines"):
             m.pop(key)
-    claude = root / "CLAUDE.md"
-    title = next((ln[2:].strip() for ln in claude.read_text(encoding="utf-8").splitlines() if ln.startswith("# ")),
-                 root.name) if claude.exists() else root.name
+    rules = root / "pravila.md"
+    title = next((ln[2:].strip() for ln in rules.read_text(encoding="utf-8").splitlines() if ln.startswith("# ")),
+                 root.name) if rules.exists() else root.name
     return {"project": title, "stages": stages, "modules": modules, "archive": archive[-12:][::-1],
             "check": {"errors": errors, "warnings": warnings}}
 
