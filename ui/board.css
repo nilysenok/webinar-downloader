@@ -8,11 +8,13 @@
 .sub.url { white-space: nowrap; }  /* ссылку не переносим и на телефоне — только многоточие */
 .mode { font-size: 12px; line-height: 20px; padding: 0 8px; border-radius: 99px; background: var(--surface-2); color: var(--muted); font-weight: 500; vertical-align: 2px; margin-left: 8px; white-space: nowrap; }
 .pct-row { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; margin: 20px 0 12px; }
-.pct { font-size: 40px; line-height: 1; font-weight: 650; letter-spacing: -.03em; }
+.pct { font-size: 44px; line-height: 1; font-weight: 650; letter-spacing: -.03em; }
 .pct small { font-size: 20px; color: var(--muted); font-weight: 500; margin-left: 1px; }
 .stage-label { color: var(--muted); font-size: 14px; text-align: right; }
 .bar { height: 8px; background: var(--lane); border-radius: 99px; overflow: hidden; }
-.bar > i { display: block; height: 100%; background: var(--accent); border-radius: 99px; transition: width .6s ease; }
+.bar > i { position: relative; overflow: hidden; display: block; height: 100%; background: linear-gradient(90deg, var(--accent), color-mix(in srgb, var(--accent) 65%, #ff9a5a)); border-radius: 99px; transition: width .6s ease; }
+.bar > i::after { content: ""; position: absolute; inset: 0; background: linear-gradient(90deg, transparent, rgba(255,255,255,.38), transparent); transform: translateX(-100%); animation: shine 1.8s ease-in-out infinite; }
+@keyframes shine { to { transform: translateX(100%); } }
 .bar.wait > i { width: 30% !important; animation: slide 1.4s ease-in-out infinite; }
 @keyframes slide { from { transform: translateX(-100%); } to { transform: translateX(340%); } }
 .card-foot { display: flex; align-items: flex-end; gap: 12px 20px; margin-top: 16px; flex-wrap: wrap; }
@@ -82,6 +84,10 @@ details.log { margin-top: 16px; }
 .log-body time { color: var(--faint); margin-right: 8px; }
 
 @media (max-width: 640px) {
+  /* название и сводка во всю ширину, «Отменить» — под ними по краю текста (справа он ломал название в две строки) */
+  .card-head { flex-wrap: wrap; gap: 4px; }
+  .card-head .t { flex-basis: 100%; }
+  .card-head button.ghost { margin: 0 0 0 -8px; }  /* поле кнопки на телефоне 8 px (ниже) */
   .pct { font-size: 34px; }
   .pct-row { flex-direction: column; align-items: flex-start; gap: 8px; }
   .stage-label { text-align: left; }
