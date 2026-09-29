@@ -1,33 +1,32 @@
-"""Реестр задач сервера: history.json, запуск в фоне, автосохранение, caffeinate."""
+"""Реестр задач сервера: history.json, запуск в фоне, автосохранение, «не спать» во время загрузок."""
 import asyncio
 import json
-import os
-import subprocess
 import time
 from pathlib import Path
 
 from downloader import ACTIVE, Job, run
 from downloader.config import ROOT
+from downloader.osdeps import Awake
 
 HISTORY = ROOT / "history.json"
 
 jobs: dict[str, Job] = {}
 tasks: dict[str, asyncio.Task] = {}
 _sizes: dict[str, tuple[float, int]] = {}
-_caffeinate: subprocess.Popen | None = None
+_awake = Awake()
 
 
 def save():
     data = [j.to_dict() for j in jobs.values()]
     tmp = HISTORY.with_suffix(".tmp")
-    tmp.write_text(json.dumps(data, ensure_ascii=False, indent=1))
+    tmp.write_text(json.dumps(data, ensure_ascii=False, indent=1), encoding="utf-8")
     tmp.replace(HISTORY)
 
 
 def load():
     if not HISTORY.exists():
         return
-    for d in json.loads(HISTORY.read_text()):
+    for d in json.loads(HISTORY.read_text(encoding="utf-8")):
         job = Job.from_dict(d)
         if job.status in ACTIVE:
             job.status = "interrupted"
@@ -41,17 +40,8 @@ def any_active() -> bool:
 
 
 def keep_awake():
-    """Пока идёт хоть одна загрузка, caffeinate -i не даёт Mac уснуть (урок Hustle).
-
-    -w <pid сервера>: caffeinate умрёт вместе с сервером, даже если тот упадёт.
-    """
-    global _caffeinate
-    running = _caffeinate is not None and _caffeinate.poll() is None
-    if any_active() and not running:
-        _caffeinate = subprocess.Popen(["caffeinate", "-i", "-w", str(os.getpid())])
-    elif not any_active() and running:
-        _caffeinate.terminate()
-        _caffeinate = None
+    """Пока идёт хоть одна загрузка, компьютер не уснёт (урок Hustle); как — решает osdeps.Awake по ОС."""
+    _awake.start() if any_active() else _awake.stop()
 
 
 def work_size(job: Job) -> int:
@@ -99,8 +89,7 @@ def shutdown():
         if j.status in ACTIVE:
             j.cancel = True
     save()
-    if _caffeinate and _caffeinate.poll() is None:
-        _caffeinate.terminate()
+    _awake.stop()
 
 
 def outputs_with_state(job: Job) -> dict:

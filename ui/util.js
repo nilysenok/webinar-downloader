@@ -23,7 +23,12 @@ export function bytes(b) {
 export const speed = b => b >= 1e6 ? fix(b / 1e6, 1) + " МБ/с" : Math.round(b / 1e3) + " КБ/с";
 export const date = t => new Date(t * 1000).toLocaleString("ru-RU", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
 export const clock = t => new Date(t * 1000).toLocaleTimeString("ru-RU");
-export const fileName = p => String(p).split("/").pop();
+export const fileName = p => String(p).split(/[\\/]/).pop();  // в Windows путь с «\»
+
+// Подписи, зависящие от ОС пользователя: где открыть файл и чем запустить сервер
+const OS = /Mac/.test(navigator.platform) ? "mac" : /Win/.test(navigator.platform) ? "win" : "linux";
+export const folderLabel = { mac: "В Finder", win: "В проводнике", linux: "Открыть папку" }[OS];
+export const launcher = { mac: "start.command", win: "start.bat", linux: "start.sh" }[OS];
 
 // plural(5, "камера", "камеры", "камер") → «5 камер»
 export function plural(n, one, few, many) {

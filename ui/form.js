@@ -1,6 +1,6 @@
 // Форма новой загрузки: ссылка, режим, короткая сводка о записи. Камеры и число соединений — по умолчанию сервера.
 import { icon } from "./icons.js";
-import { $, api, dur, esc, plural, store } from "./util.js";
+import { $, api, dur, esc, launcher, plural, store } from "./util.js";
 
 const state = { mode: "audio", url: "", info: null, busy: false, error: "" };
 let timer;
@@ -35,7 +35,7 @@ async function look(u) {
     const info = await api("/api/analyze", { method: "POST", body: { url: u } });
     if (state.url === u) Object.assign(state, { info, busy: false });
   } catch (e) {
-    if (state.url === u) Object.assign(state, { error: e.message === "Failed to fetch" ? "Сервер недоступен — запустите start.command" : e.message, busy: false });
+    if (state.url === u) Object.assign(state, { error: e.message === "Failed to fetch" ? `Сервер недоступен — запустите ${launcher}` : e.message, busy: false });
   }
   renderPreview();
 }
@@ -72,7 +72,7 @@ async function submit(e, onCreated) {
     onUrl();
     onCreated();
   } catch (err) {
-    $("formErr").textContent = err.message === "Failed to fetch" ? "Сервер недоступен — запустите start.command" : err.message;
+    $("formErr").textContent = err.message === "Failed to fetch" ? `Сервер недоступен — запустите ${launcher}` : err.message;
   } finally {
     $("go").disabled = false;
   }

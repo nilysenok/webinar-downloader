@@ -1,8 +1,7 @@
-"""HTTP API дашборда загрузок + раздача ui/. Запуск: ./start.command (или .venv/bin/python -m server.app)."""
+"""HTTP API дашборда загрузок + раздача ui/. Запуск: start.command (macOS), start.bat (Windows), start.sh (Linux) или python -m server.app."""
 import asyncio
 import os
 import shutil
-import subprocess
 from contextlib import asynccontextmanager
 from pathlib import Path
 
@@ -14,7 +13,7 @@ from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
 import downloader
-from downloader import ACTIVE, DOWNLOADS, MODES, Job
+from downloader import ACTIVE, DOWNLOADS, MODES, Job, osdeps
 from downloader.config import ROOT, TIMEOUT, UA
 
 from . import store
@@ -118,10 +117,7 @@ async def restart(job_id: str):
 def reveal(job_id: str):
     job = get(job_id)
     existing = [o["path"] for o in job.outputs if Path(o["path"]).exists()]
-    if existing:
-        subprocess.run(["open", "-R", existing[0]])
-    else:
-        subprocess.run(["open", job.folder if job.folder and Path(job.folder).exists() else str(DOWNLOADS)])
+    osdeps.reveal(Path(existing[0]) if existing else Path(job.folder) if job.folder and Path(job.folder).exists() else DOWNLOADS)
     return {"ok": True}
 
 

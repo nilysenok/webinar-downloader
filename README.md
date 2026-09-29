@@ -1,6 +1,6 @@
 # MTS Link Загрузчик
 
-Скачивает запись вебинара MTS Link по ссылке: **звук** всех участников одним MP3 или **видео** — все камеры на одном экране, со звуком. Работает локально на Mac: дашборд в браузере или команда в терминале.
+Скачивает запись вебинара MTS Link по ссылке: **звук** всех участников одним MP3 или **видео** — все камеры на одном экране, со звуком. Работает локально на macOS, Windows и Linux: дашборд в браузере или команда в терминале.
 
 ![Главный экран](docs/screenshots/01-main.png)
 
@@ -12,46 +12,61 @@
 
 Только для записей, к которым у вас есть права.
 
-## Что нужно
+## Установка и запуск
 
-- macOS (Apple Silicon или Intel)
-- [Homebrew](https://brew.sh)
-- `ffmpeg` и Python 3.10+ — ставятся одной командой ниже
-- Git — есть в macOS (при первом вызове предложит поставить Command Line Tools)
+Нужны **ffmpeg** и **Python 3.10+**. Всё остальное скрипт запуска поставит сам: при первом запуске создаст окружение `.venv` и установит зависимости из `requirements.txt`.
 
-## Установка
+### macOS
 
 ```bash
-# 1. ffmpeg и Python
-brew install ffmpeg python@3.12
-
-# 2. проект
+brew install ffmpeg python@3.12          # Homebrew: https://brew.sh
 git clone https://github.com/nilysenok/webinar-downloader.git
-cd webinar-downloader
 ```
 
-Дальше ничего ставить руками не нужно: при первом запуске `start.command` сам создаст окружение `.venv` и поставит зависимости из `requirements.txt`.
+Запуск — двойной клик по **`start.command`** в Finder (или `./start.command` в Терминале).
 
-Если нужно поставить вручную (например, без Finder):
+### Windows 10/11
+
+В PowerShell или командной строке:
+
+```powershell
+winget install Gyan.FFmpeg Python.Python.3.12 Git.Git
+git clone https://github.com/nilysenok/webinar-downloader.git
+```
+
+После `winget` закройте и заново откройте окно, чтобы подхватились новые программы. Запуск — двойной клик по **`start.bat`** в Проводнике. Если Windows спросит про доступ в сеть, достаточно разрешить частные сети: сервер слушает только этот компьютер (`127.0.0.1`).
+
+### Linux (Ubuntu, Debian, Mint; Fedora — через `dnf`)
 
 ```bash
-python3.12 -m venv .venv
-.venv/bin/pip install -r requirements.txt
+sudo apt install ffmpeg python3 python3-venv git fonts-dejavu-core
+git clone https://github.com/nilysenok/webinar-downloader.git
+cd webinar-downloader && ./start.sh
 ```
 
-## Запуск
+### Дальше одинаково на всех системах
 
-Двойной клик по **`start.command`** в Finder (или `./start.command` в терминале). Откроется окно Терминала с сервером и дашборд в браузере: <http://127.0.0.1:8765>.
+Откроется окно терминала с сервером и дашборд в браузере: <http://127.0.0.1:8765>.
 
 1. Вставьте ссылку на запись вида `https://my.mts-link.ru/j/…/record-new/…` — под полем появится название, длительность и сколько участников и камер.
 2. Выберите **Аудио** (MP3) или **Видео** (MP4, все камеры на одном экране).
-3. Нажмите **Скачать**. Готовый файл — кнопкой «▶ Смотреть» / «▶ Слушать» или «В Finder».
+3. Нажмите **Скачать**. Готовый файл — кнопкой «Смотреть» / «Слушать» или кнопкой папки рядом.
 
-Окно Терминала с сервером не закрывайте, пока идут загрузки: закроете — сервер остановится. Mac не уснёт, пока идёт загрузка.
+Окно терминала с сервером не закрывайте, пока идут загрузки: закроете — сервер остановится. Пока идёт загрузка, компьютер не уснёт (macOS — `caffeinate`, Windows — системный запрет сна, Linux — `systemd-inhibit`).
 
 Файлы складываются в `downloads/ГГГГ-ММ-ДД_ЧЧММ <название>/`. Промежуточные куски — в `_work/` внутри той же папки; они нужны для докачки после обрыва и удаляются кнопкой «Удалить промежуточные» в «Подробнее».
 
+Поставить окружение вручную, без скрипта запуска:
+
+```bash
+python3 -m venv .venv
+.venv/bin/pip install -r requirements.txt       # Windows: .venv\Scripts\pip install -r requirements.txt
+.venv/bin/python -m server.app                  # Windows: .venv\Scripts\python -m server.app
+```
+
 ## Из терминала
+
+В Windows вместо `.venv/bin/python` — `.venv\Scripts\python`.
 
 ```bash
 # звук одним MP3
@@ -66,7 +81,7 @@ python3.12 -m venv .venv
 
 Параметры: `--mode audio|av|video`, `--quality best|480`, `--workers 64` (до 256), `--no-gallery`.
 
-Длинные загрузки удобнее запускать через `scripts/download.sh` — те же параметры, но Mac не уснёт до конца:
+Компьютер не уснёт до конца загрузки. На macOS и Linux есть короткая форма — `scripts/download.sh` с теми же параметрами:
 
 ```bash
 scripts/download.sh "<ссылка>" --mode audio
@@ -78,18 +93,19 @@ scripts/download.sh "<ссылка>" --mode audio
 git pull
 ```
 
-Затем перезапустите `start.command` и обновите страницу в браузере. Если зависимости поменялись, `start.command` доставит их сам.
+Затем перезапустите скрипт запуска (`start.command`, `start.bat` или `start.sh`) и обновите страницу. Новые зависимости он доставит сам.
 
 ## Если что-то не так
 
 | Что видно | Что сделать |
 |---|---|
-| В дашборде «Failed to fetch» | Сервер не запущен — запустите `start.command` и не закрывайте его окно |
-| «Не найден ffmpeg» | `brew install ffmpeg` |
-| «Не найден рабочий Python 3.10+» | `brew install python@3.12` |
+| В дашборде «Сервер недоступен» | Сервер не запущен — запустите `start.command` / `start.bat` / `start.sh` и не закрывайте его окно |
+| «Не найден ffmpeg» | macOS: `brew install ffmpeg` · Windows: `winget install Gyan.FFmpeg` · Linux: `sudo apt install ffmpeg` |
+| «Не найден Python 3.10+» | macOS: `brew install python@3.12` · Windows: `winget install Python.Python.3.12` · Linux: `sudo apt install python3 python3-venv` |
+| На общем экране нет имён (Linux) | Нет шрифта с кириллицей: `sudo apt install fonts-dejavu-core` |
 | Загрузка оборвалась | «Продолжить» в строке загрузки — докачает с места остановки |
 | Интерфейс выглядит странно после обновления | Обновите страницу с Cmd+Shift+R |
-| Отдельные видео камер не открываются в QuickTime | Это VP9 — откройте в Chrome, VLC или IINA; «общий экран» (H.264) открывается везде |
+| Отдельные видео камер не открываются в плеере | Это VP9 — откройте в браузере или VLC; «общий экран» (H.264) открывается везде |
 
 ## webinarip — быстрая версия на Rust
 

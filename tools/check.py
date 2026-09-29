@@ -4,7 +4,7 @@ from pathlib import Path
 
 from .canon import LAYERS, SECTIONS, SKIP_DIRS, STATUSES
 
-CODE_EXT = {".py", ".js", ".css", ".html", ".sh", ".command"}
+CODE_EXT = {".py", ".js", ".css", ".html", ".sh", ".command", ".bat"}
 GENERATED = {"dashboard.html", "ROOT.md", "dashboard.json"}
 FILE_LIMIT, FUNC_SOFT, FUNC_HARD = 200, 40, 60
 CTX_LIMIT, TASK_LIMIT, MODULE_LIMIT = 150, 25, 10

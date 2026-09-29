@@ -1,10 +1,10 @@
-import resource
 import unittest
 
 from downloader.config import MAX_WORKERS
-from downloader.limits import enough_for, raise_open_files
+from downloader.limits import enough_for, raise_open_files, resource
 
 
+@unittest.skipIf(resource is None, "в Windows нет лимита RLIMIT_NOFILE")
 class OpenFilesLimit(unittest.TestCase):
     def setUp(self):
         self.saved = resource.getrlimit(resource.RLIMIT_NOFILE)

@@ -6,6 +6,8 @@
 раздаёт интерфейс `ui/` и готовые файлы. Только 127.0.0.1.
 
 ## КОНТРАКТ
+- «не спать» во время загрузок и «показать в папке» — через `downloader.osdeps` (Awake, reveal): одинаково на macOS, Windows, Linux
+- `history.json` читается и пишется в UTF-8 явно — в Windows по умолчанию cp1251 (29.09)
 - запуск: `.venv/bin/python -m server.app` (порт `PORT`, по умолчанию 8765)
 - `POST /api/analyze {url}` → запись и дорожки с вариантами видео (без URL рендишнов)
 - `POST /api/jobs {url, mode, quality, streams, workers}` → 201 + задача; всё, кроме `url`, необязательно; пустой `streams` — все камеры записи (28.09)

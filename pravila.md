@@ -11,7 +11,7 @@
 - `downloader/` — БЭКЕНД: API MTS Link, HLS, загрузка сегментов, ffmpeg
 - `server/` — БЭКЕНД: FastAPI, фоновые задачи, history.json, caffeinate
 - `ui/` — ФРОНТЕНД: интерфейс загрузчика (ES-модули, без сборки)
-- `scripts/` — БЭКЕНД: окружение и запуск (start.command, scripts/*.sh, venv)
+- `scripts/` — БЭКЕНД: окружение и запуск (start.command / start.bat / start.sh, scripts/*.sh, venv)
 - `rust-core/`, `rust-cli/`, `rust-server/` — БЭКЕНД, `rust-ui/` — ФРОНТЕНД: канон публичного Rust-проекта
   `../webinarip/` (github nilysenok/webinarip, MIT). Код там, здесь только `_ctx.md`.
   В публичный репо не попадает ничего отсюда; никаких упоминаний ИИ, автор — Nikita Lysenok.
@@ -21,7 +21,7 @@
 - Сборка канона: `.venv/bin/python xtask.py` → ROOT.md, dashboard.json, dashboard.html
 - Валидатор + тесты (CI): `.venv/bin/python xtask.py --check` — должен быть ЗЕЛЁНЫЙ
 - Только тесты: `.venv/bin/python -m unittest discover -s tests`
-- Дашборд загрузчика: `./start.command` (двойной клик в Finder) → http://127.0.0.1:8765
+- Дашборд загрузчика: `./start.command` (macOS), `start.bat` (Windows), `./start.sh` (Linux) → http://127.0.0.1:8765
 - Длинная загрузка из терминала: `scripts/download.sh "<ссылка>" --mode audio`
 - webinarip: `cd ../webinarip && cargo test --release && cargo build --release` → `target/release/webinarip`
 

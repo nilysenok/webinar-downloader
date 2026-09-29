@@ -1,0 +1,4 @@
+# Windows-скрипты должны быть с CRLF, иначе cmd читает их через строку; shell-скрипты — только LF
+*.bat text eol=crlf
+*.sh text eol=lf
+*.command text eol=lf

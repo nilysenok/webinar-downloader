@@ -4,11 +4,11 @@
 загрузки, где могут быть кавычки и двоеточия.
 """
 import math
-from pathlib import Path
+
+from .osdeps import filter_path, font
 
 W, H, FPS = 1280, 720, 25
 BG, TILE, TALK, GAP = "0x111111", "0x262626", "0x2fd26b", 4
-FONT = Path("/System/Library/Fonts/Supplemental/Arial.ttf")  # есть кириллица
 
 
 def grid(n: int):
@@ -28,10 +28,10 @@ def grid(n: int):
 
 def text(textfile: str, size: int, center: bool) -> str:
     """Подпись: снизу слева, если есть видео; крупно по центру — у плитки без камеры и на заставке."""
-    if not FONT.exists():
+    if not (f := font()):  # нет шрифта с кириллицей — без подписей, но видео соберётся
         return "null"
     where = "x=(w-tw)/2:y=(h-th)/2" if center else "x=12:y=h-th-12"
-    return (f"drawtext=fontfile='{FONT}':textfile={textfile}:expansion=none:fontsize={size}:fontcolor=white"
+    return (f"drawtext=fontfile='{filter_path(f)}':textfile={textfile}:expansion=none:fontsize={size}:fontcolor=white"
             f":box=1:boxcolor=black@0.55:boxborderw={max(6, size // 5)}:{where}")
 
 

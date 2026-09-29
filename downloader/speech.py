@@ -23,7 +23,7 @@ async def levels(job, audio: Path, start: float, n: int, folder: Path, name: str
              f"ametadata=print:key=lavfi.astats.Overall.RMS_level:file={f.name}")
     await ffmpeg(job, ["-i", audio, "-af", graph, "-f", "null", "-"], cwd=folder)
     pts = None
-    for line in f.read_text().splitlines():
+    for line in f.read_text(encoding="utf-8", errors="replace").splitlines():
         if m := re.search(r"pts_time:([\d.]+)", line):
             pts = float(m[1])
         elif line.startswith("lavfi.astats.Overall.RMS_level=") and pts is not None:

@@ -94,7 +94,7 @@ async def render(job, tracks, videos: dict, audios: dict, mix: Path | None, out:
             return await _segment(job, i, seg, sessions, labels, work, tick)
 
     parts = await asyncio.gather(*(one(i, s) for i, s in enumerate(segs)))
-    (work / "list.txt").write_text("".join(f"file '{p.name}'\n" for p in parts))
+    (work / "list.txt").write_text("".join(f"file '{p.name}'\n" for p in parts), encoding="utf-8")
     args = ["-f", "concat", "-safe", "0", "-i", "list.txt"] + (["-i", mix] if mix else [])
     args += ["-map", "0:v"] + (["-map", "1:a:0"] if mix else []) + ["-c", "copy", "-t", f"{job.duration:.3f}",
                                                                     "-movflags", "+faststart"]

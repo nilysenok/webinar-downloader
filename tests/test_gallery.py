@@ -1,5 +1,6 @@
 """Настоящее видео по init-сегменту, пропуск «видео» без кадров, общий экран (сетка, ffmpeg)."""
 import asyncio
+import os
 import shutil
 import subprocess
 import tempfile
@@ -86,7 +87,8 @@ class RenderTest(unittest.TestCase):
     def test_camera_speaker_and_empty_screen(self):
         """Анна с камерой 0–20 с; никого 20–39; Илья без камеры говорит 40–45 → плитка с именем и рамкой."""
         with tempfile.TemporaryDirectory() as tmp:
-            d = Path(tmp) / "it's 1:2"  # кавычка и двоеточие в пути не ломают граф фильтров
+            # кавычка и двоеточие в пути не ломают граф фильтров (в Windows двоеточие в имени запрещено — там только кавычка)
+            d = Path(tmp) / ("it's 1,2" if os.name == "nt" else "it's 1:2")
             (d / "_work").mkdir(parents=True)
             vp9(d / "v.mp4", 20, "red")
             ff("-f", "lavfi", "-i", "sine=d=2", "-c:a", "aac", "-movflags", "frag_keyframe+empty_moov", d / "nov.mp4")

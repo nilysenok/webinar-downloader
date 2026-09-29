@@ -1,12 +1,13 @@
 """CLI: .venv/bin/python -m downloader.cli <ссылка record-new> [--mode audio|av|video] [--quality best|480] [--workers 64] [--no-gallery]
 
-Для длинных загрузок — scripts/download.sh (то же самое под caffeinate).
+Компьютер не уснёт, пока идёт загрузка (osdeps.Awake: caffeinate / systemd-inhibit / Windows API).
 """
 import argparse
 import asyncio
 
 from .config import DEFAULT_WORKERS, MODES
 from .models import Job
+from .osdeps import Awake
 from .pipeline import run
 
 
@@ -29,7 +30,12 @@ def main():
     ap.add_argument("--no-gallery", action="store_true", help="без общего экрана: вместо него видео каждого отдельным файлом")
     a = ap.parse_args()
     job = Job(a.url, mode=a.mode, quality=a.quality, workers=a.workers, gallery=not a.no_gallery)
-    asyncio.run(_watch(job))
+    awake = Awake()  # компьютер не уснёт до конца загрузки — на любой ОС
+    awake.start()
+    try:
+        asyncio.run(_watch(job))
+    finally:
+        awake.stop()
     for line in job.log:
         if line["level"] != "info":
             print(f"[{line['level']}] {line['msg']}")
