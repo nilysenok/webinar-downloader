@@ -8,7 +8,7 @@
 ## КОНТРАКТ
 - запуск: `.venv/bin/python -m server.app` (порт `PORT`, по умолчанию 8765)
 - `POST /api/analyze {url}` → запись и дорожки с вариантами видео (без URL рендишнов)
-- `POST /api/jobs {url, mode, quality, streams, workers}` → 201 + задача; для av/video `streams` обязателен
+- `POST /api/jobs {url, mode, quality, streams, workers}` → 201 + задача; всё, кроме `url`, необязательно; пустой `streams` — все камеры записи (28.09)
 - `GET /api/jobs` → задачи новые сверху; + `speed, eta, progress, bytes_total_est, work_size, outputs[].exists`
 - `POST /api/jobs/{id}/cancel | restart | reveal | clean`, `DELETE /api/jobs/{id}` (409 для активной)
 - `GET /files/{id}/{n}[?dl=1]` → n-й итоговый файл (Range поддерживается)

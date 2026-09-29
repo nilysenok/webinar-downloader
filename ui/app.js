@@ -1,41 +1,38 @@
-// Точка входа UI: опрос /api/jobs, отрисовка, действия по кнопкам, плеер.
-import { activeCard, openLogs } from "./board.js";
+// Точка входа UI: опрос /api/jobs, отрисовка, действия по кнопкам.
+import { activeCard } from "./board.js";
 import { initForm } from "./form.js";
 import { expanded, historyItem } from "./history.js";
+import { openLogs } from "./more.js";
+import { initPlayer, play } from "./player.js";
 import { $, ACTIVE, api } from "./util.js";
 
-let jobs = [], lastHistory = "", pollTimer;
+let jobs = [], lastHistory = "", pollTimer, loaded = false;
+
+const EMPTY = `<div class="empty"><b>Пока ничего не скачано</b>Вставьте ссылку на запись выше — файл появится здесь.</div>`;
 
 function render() {
   const active = jobs.filter(j => ACTIVE.has(j.status));
   const past = jobs.filter(j => !ACTIVE.has(j.status));
-  $("active").innerHTML = active.length
-    ? active.map(activeCard).join("")
-    : `<div class="empty">Нет активных загрузок — вставьте ссылку на запись выше</div>`;
+  $("activeSec").hidden = !active.length;
+  $("active").innerHTML = active.map(activeCard).join("");
   // историю перерисовываем только при изменениях, чтобы не сбивать клики и прокрутку журнала
   const h = JSON.stringify([past, [...expanded], [...openLogs]]);
   if (h === lastHistory) return;
   lastHistory = h;
-  $("history").innerHTML = past.length ? `<div class="hist">${past.map(historyItem).join("")}</div>` : `<div class="empty">Пока пусто</div>`;
+  $("history").innerHTML = past.length ? `<div class="hist">${past.map(historyItem).join("")}</div>` : loaded ? EMPTY : "";
 }
 
 async function refresh() {
   clearTimeout(pollTimer);
-  try { jobs = await api("/api/jobs"); render(); } catch { /* сервер недоступен — повторим */ }
+  try { jobs = await api("/api/jobs"); loaded = true; render(); } catch { /* сервер недоступен — повторим */ }
   pollTimer = setTimeout(refresh, jobs.some(j => ACTIVE.has(j.status)) ? 1000 : 3000);
 }
 
-function play(id, n) {
-  $("playerTitle").textContent = jobs.find(x => x.id === id)?.title || "";
-  $("audio").src = `/files/${id}/${n}`;
-  $("audio").play();
-  $("player").classList.add("on");
-  document.body.classList.add("has-player");
-}
-
 async function act(act, id, btn) {
-  if (act === "play") return play(id, +btn.dataset.n);
-  if (act === "clean" && !confirm("Удалить промежуточные файлы этой загрузки? Готовые файлы останутся, но перезапуск начнёт скачивание с нуля.")) return;
+  const job = jobs.find(x => x.id === id);
+  if (act === "play") return job && play(job, +btn.dataset.n);
+  if (act === "clean" && !confirm("Удалить промежуточные файлы? Готовые файлы останутся, но «Скачать заново» начнёт с нуля.")) return;
+  if (act === "cancel" && !confirm("Отменить загрузку? Скачанное сохранится — «Продолжить» докачает с этого места.")) return;
   try {
     if (act === "delete") {
       await api(`/api/jobs/${id}`, { method: "DELETE" });
@@ -58,17 +55,11 @@ document.addEventListener("click", e => {
 });
 // toggle не всплывает — ловим на фазе перехвата, чтобы открытый журнал не закрывался при перерисовке
 document.addEventListener("toggle", e => {
-  const id = e.target.dataset?.log;
-  if (id) e.target.open ? openLogs.add(id) : openLogs.delete(id);
+  const key = e.target.dataset?.log;
+  if (key) e.target.open ? openLogs.add(key) : openLogs.delete(key);
 }, true);
-
-$("playerClose").onclick = () => {
-  $("audio").pause();
-  $("audio").removeAttribute("src");
-  $("player").classList.remove("on");
-  document.body.classList.remove("has-player");
-};
 window.addEventListener("resize", () => { lastHistory = ""; render(); });
 
+initPlayer();
 initForm(refresh);
 refresh();

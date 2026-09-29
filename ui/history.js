@@ -1,56 +1,66 @@
-// Строка истории прошлых загрузок с раскрывающимися подробностями.
-import { logBlock, timeline } from "./board.js";
-import { bytes, date, dur, esc } from "./util.js";
+// Строка истории: главное действие сразу, файлы и служебное — в раскрытой строке.
+import { moreBlock } from "./more.js";
+import { playable } from "./player.js";
+import { bytes, date, dur, esc, fileName } from "./util.js";
 
 export const expanded = new Set();
 const STATUS = { done: "Готово", error: "Ошибка", cancelled: "Отменено", interrupted: "Прервано" };
+const btn = (j, act, label, extra = "") => `<button data-act="${act}" data-id="${j.id}" ${extra}>${label}</button>`;
 
 function meta(j) {
   const outs = j.outputs || [];
-  const m = [`<span>${date(j.created)}</span>`, `<span>${esc(j.mode_label)}</span>`];
+  const m = [`<span>${date(j.created)}</span>`, `<span>${j.mode === "audio" ? "Аудио" : "Видео"}</span>`];
+  // статус — первым в строке под названием: в конце длинного названия он обрезался до «Ош…»
+  if (j.status !== "done") m.unshift(`<span class="badge ${j.status}">${STATUS[j.status] || j.status}</span>`);
   if (j.duration) m.push(`<span class="num">${dur(j.duration)}</span>`);
-  if (j.size) m.push(`<span class="num">${bytes(j.size)}${outs.length > 1 ? ` · ${outs.length} файла` : ""}</span>`);
-  if (j.finished && j.started) m.push(`<span>заняло <span class="num">${dur(j.finished - j.started)}</span></span>`);
-  if (outs.length && !outs.some(o => o.exists)) m.push(`<span class="bad">файл удалён</span>`);
-  if (j.work_size) m.push(`<span>промежуточные <span class="num">${bytes(j.work_size)}</span></span>`);
+  if (j.size) m.push(`<span class="num">${bytes(j.size)}</span>`);
+  if (outs.length && !outs.some(o => o.exists)) m.push(`<span class="bad">файлы удалены</span>`);
   return m.join("");
 }
 
 function actions(j) {
   const outs = j.outputs || [];
-  const btn = (act, label, extra = "") => `<button data-act="${act}" data-id="${j.id}" ${extra}>${label}</button>`;
-  const mp3 = outs.findIndex(o => o.exists && o.path.endsWith(".mp3"));
-  return [
-    mp3 >= 0 && btn("play", "▶ Слушать", `data-n="${mp3}"`),
-    (outs.some(o => o.exists) || j.work_size) && btn("reveal", "Показать в Finder"),
-    btn("restart", j.status === "done" ? "Скачать заново" : "Продолжить", `title="Перезапуск в ту же папку: скачанные сегменты не качаются повторно"`),
-    j.work_size && btn("clean", "Удалить промежуточные"),
-    `<button class="ghost" data-act="delete" data-id="${j.id}" title="Убрать из истории (файлы останутся)">✕</button>`,
-  ].filter(Boolean).join("");
+  const main = outs.findIndex(o => o.exists && playable(o.path));
+  const a = [];
+  if (j.status !== "done") a.push(btn(j, "restart", "Продолжить", `class="primary sm" title="Докачает с места остановки"`));
+  else if (main >= 0) a.push(btn(j, "play", outs[main].path.endsWith(".mp3") ? "▶ Слушать" : "▶ Смотреть", `class="primary sm" data-n="${main}"`));
+  if (outs.some(o => o.exists) || j.folder) a.push(btn(j, "reveal", "В Finder", `title="Показать файл в Finder"`));
+  return a.join("");
+}
+
+// Общий экран — первым, отдельные камеры — после
+function files(j) {
+  const outs = (j.outputs || []).map((o, i) => ({ ...o, i })).sort((a, b) => playable(b.path) - playable(a.path));
+  return outs.map(o => `<li><span class="fn" title="${esc(o.path)}">${esc(fileName(o.path))}</span><span class="num sz">${bytes(o.size)}</span>
+    ${o.exists ? `${playable(o.path) ? `<button class="ghost sm" data-act="play" data-id="${j.id}" data-n="${o.i}">▶</button>` : ""}<a href="/files/${j.id}/${o.i}?dl=1" title="Скачать">↓</a>` : `<span class="bad">нет файла</span>`}</li>`).join("");
 }
 
 function detail(j) {
-  const outs = j.outputs || [];
-  const files = outs.map((o, i) => `<li><span class="p">${esc(o.path)}</span><span class="num">${bytes(o.size)}</span>${
-    o.exists ? `<a href="/files/${j.id}/${i}?dl=1">скачать</a>` : `<span class="bad">нет файла</span>`}</li>`).join("");
+  const list = files(j);
+  const tools = [
+    j.status === "done" && btn(j, "restart", "Скачать заново", `title="В ту же папку; уже скачанное не качается повторно"`),
+    j.work_size && btn(j, "clean", `Удалить промежуточные · ${bytes(j.work_size)}`, `title="Кусочки записи для докачки; готовые файлы останутся"`),
+    btn(j, "delete", "Убрать из списка", `class="ghost" title="Файлы на диске останутся"`),
+  ].filter(Boolean).join("");
   return `<div class="h-detail">
     ${j.error ? `<div class="err">${esc(j.error)}</div>` : ""}
-    ${files ? `<ul class="files">${files}</ul>` : ""}
-    <div class="kv">${esc(j.url)}</div>
-    ${j.folder ? `<div class="kv">папка: ${esc(j.folder)}</div>` : ""}
-    ${timeline(j, false)}
-    ${logBlock(j)}
+    ${list ? `<ul class="files">${list}</ul>` : ""}
+    <div class="tools">${tools}</div>
+    ${moreBlock(j, "Журнал и цифры")}
   </div>`;
 }
 
 export function historyItem(j) {
-  const badge = j.status !== "done" ? ` <span class="badge ${j.status}">${STATUS[j.status] || j.status}</span>` : "";
-  return `<div class="h-item">
+  const open = expanded.has(j.id);
+  return `<div class="h-item${open ? " open" : ""}">
     <div class="h-row" data-toggle="${j.id}">
-      <span class="dot ${j.status}"></span>
-      <div class="h-main"><div class="h-title">${esc(j.title || j.url)}${badge}</div><div class="h-meta">${meta(j)}</div></div>
+      <span class="kind ${j.mode === "audio" ? "a" : "v"}">${j.mode === "audio"
+        ? `<svg viewBox="0 0 24 24"><path d="M9 18V6l10-2v12M9 18a3 3 0 1 1-6 0 3 3 0 0 1 6 0Zm10-2a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"/></svg>`
+        : `<svg viewBox="0 0 24 24"><rect x="3" y="6" width="13" height="12" rx="2"/><path d="m16 10 5-3v10l-5-3"/></svg>`}</span>
+      <div class="h-main"><div class="h-title">${esc(j.title || j.url)}</div><div class="h-meta">${meta(j)}</div></div>
       <div class="h-actions">${actions(j)}</div>
+      <button type="button" class="ghost sm more-btn" aria-expanded="${open}">Подробнее<span class="chev" aria-hidden="true"></span></button>
     </div>
-    ${expanded.has(j.id) ? detail(j) : ""}
+    ${open ? detail(j) : ""}
   </div>`;
 }

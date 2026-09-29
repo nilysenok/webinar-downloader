@@ -11,16 +11,25 @@ export function dur(s) {
   return h ? `${h}:${pad(m)}:${pad(sec)}` : `${m}:${pad(sec)}`;
 }
 
+const fix = (x, d) => x.toFixed(d).replace(".", ",");
+
 export function bytes(b) {
   if (!b) return "0 МБ";
-  if (b >= 1e9) return (b / 1e9).toFixed(2) + " ГБ";
-  if (b >= 1e6) return (b / 1e6).toFixed(b >= 1e8 ? 0 : 1) + " МБ";
+  if (b >= 1e9) return fix(b / 1e9, 2) + " ГБ";
+  if (b >= 1e6) return fix(b / 1e6, b >= 1e8 ? 0 : 1) + " МБ";
   return Math.round(b / 1e3) + " КБ";
 }
 
-export const speed = b => b >= 1e6 ? (b / 1e6).toFixed(1) + " МБ/с" : Math.round(b / 1e3) + " КБ/с";
+export const speed = b => b >= 1e6 ? fix(b / 1e6, 1) + " МБ/с" : Math.round(b / 1e3) + " КБ/с";
 export const date = t => new Date(t * 1000).toLocaleString("ru-RU", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
 export const clock = t => new Date(t * 1000).toLocaleTimeString("ru-RU");
+export const fileName = p => String(p).split("/").pop();
+
+// plural(5, "камера", "камеры", "камер") → «5 камер»
+export function plural(n, one, few, many) {
+  const d = n % 10, h = n % 100;
+  return `${n} ${d === 1 && h !== 11 ? one : d >= 2 && d <= 4 && (h < 12 || h > 14) ? few : many}`;
+}
 
 // localStorage может быть недоступен (приватное окно) — это только удобство
 export const store = {

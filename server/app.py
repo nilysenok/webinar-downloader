@@ -42,7 +42,7 @@ class JobIn(BaseModel):
     url: str
     mode: str = "audio"
     quality: str = "best"
-    streams: list[int] = []
+    streams: list[int] = []  # пусто — все камеры записи (pipeline._prepare)
     workers: int = downloader.DEFAULT_WORKERS
 
 
@@ -76,8 +76,6 @@ async def create(body: JobIn):
         raise HTTPException(400, str(e))
     if body.mode not in MODES:
         raise HTTPException(400, "Неизвестный режим")
-    if body.mode != "audio" and not body.streams:
-        raise HTTPException(400, "Выберите хотя бы один видеопоток")
     job = Job(body.url.strip(), mode=body.mode, quality=body.quality, streams=body.streams,
               workers=max(1, min(body.workers, downloader.MAX_WORKERS)))
     store.launch(job)

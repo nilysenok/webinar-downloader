@@ -6,41 +6,60 @@
 <title>MTS Link Загрузчик</title>
 <link rel="icon" href="favicon.svg" type="image/svg+xml">
 <link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="board.css">
 <script type="module" src="app.js"></script>
 </head>
 <body>
 <div class="wrap">
-  <header><h1>MTS Link <b>→</b> файл</h1><span>записи вебинаров: аудио, видео или всё вместе</span></header>
+  <header class="top">
+    <span class="logo"><svg viewBox="0 0 24 24"><path d="M12 5v10m-4-4 4 4 4-4M7 19h10"/></svg></span>
+    <span class="brand">MTS Link <b>Загрузчик</b></span>
+  </header>
 
-  <form class="panel" id="form">
-    <input type="url" id="url" placeholder="https://my.mts-link.ru/j/…/record-new/…" autocomplete="off" required>
-    <div class="controls">
-      <div class="seg" id="modes">
-        <button type="button" data-mode="audio">Только аудио</button>
-        <button type="button" data-mode="av">Видео + аудио</button>
-        <button type="button" data-mode="video">Только видео</button>
-      </div>
-      <label class="field" id="qualityField" hidden>Качество <select id="quality"><option value="best">Лучшее</option></select></label>
-      <label class="field" title="Сервер MTS Link режет ~11 КБ/с на соединение, поэтому качаем во много потоков">Потоков <input type="number" id="workers" min="1" max="256" value="64"></label>
-      <div class="spacer"></div>
+  <form class="panel hero" id="form" novalidate>
+    <h1>Скачать запись вебинара</h1>
+    <p class="lead">Вставьте ссылку на запись — получите звук или видео со всеми участниками.</p>
+    <div class="url-row">
+      <input type="url" id="url" placeholder="https://my.mts-link.ru/j/…/record-new/…" autocomplete="off" spellcheck="false" autofocus>
       <button class="primary" id="go">Скачать</button>
     </div>
-    <div class="picker" id="picker" hidden></div>
-    <div class="form-err" id="formErr"></div>
+    <div class="preview" id="preview" hidden></div>
+    <div class="modes" id="modes" role="radiogroup" aria-label="Что скачать">
+      <button type="button" role="radio" data-mode="audio">
+        <svg viewBox="0 0 24 24"><path d="M9 18V6l10-2v12M9 18a3 3 0 1 1-6 0 3 3 0 0 1 6 0Zm10-2a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"/></svg>
+        <span><b>Аудио</b><small>MP3 · голоса всех участников в одном файле</small></span>
+      </button>
+      <button type="button" role="radio" data-mode="av">
+        <svg viewBox="0 0 24 24"><rect x="3" y="6" width="13" height="12" rx="2"/><path d="m16 10 5-3v10l-5-3"/></svg>
+        <span><b>Видео</b><small>MP4 · все камеры на одном экране, со звуком</small></span>
+      </button>
+    </div>
+    <div class="form-err" id="formErr" role="alert"></div>
   </form>
 
-  <h2>Сейчас</h2>
-  <div id="active"></div>
+  <section id="activeSec" hidden>
+    <h2>Сейчас</h2>
+    <div id="active"></div>
+  </section>
 
-  <h2>История</h2>
-  <div id="history"></div>
+  <section>
+    <h2>Загрузки</h2>
+    <div id="history"></div>
+  </section>
 </div>
 
 <div class="player" id="player">
   <div class="player-in">
     <div class="pt" id="playerTitle"></div>
     <audio id="audio" controls preload="none"></audio>
-    <button class="ghost" id="playerClose" title="Закрыть">✕</button>
+    <button class="ghost icon" id="playerClose" title="Закрыть">✕</button>
+  </div>
+</div>
+
+<div class="viewer" id="viewer" hidden>
+  <div class="viewer-in">
+    <div class="viewer-head"><span id="viewerTitle"></span><button class="ghost icon" id="viewerClose" title="Закрыть (Esc)">✕</button></div>
+    <video id="video" controls playsinline preload="metadata"></video>
   </div>
 </div>
 </body>
