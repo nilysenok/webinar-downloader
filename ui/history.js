@@ -58,7 +58,7 @@ export function historyItem(j) {
       <span class="kind ${j.mode === "audio" ? "a" : "v"}">${icon(j.mode === "audio" ? "music" : "video")}</span>
       <div class="h-main"><div class="h-title">${esc(j.title || j.url)}</div><div class="h-meta">${meta(j)}</div></div>
       <div class="h-actions">${actions(j)}</div>
-      <button type="button" class="ghost sm more-btn" aria-expanded="${open}">Подробнее${icon("down", "chev")}</button>
+      <button type="button" class="sm more-btn" aria-expanded="${open}">Подробнее${icon("down", "chev")}</button>
     </div>
     ${open ? detail(j) : ""}
   </div>`;

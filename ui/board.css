@@ -35,7 +35,15 @@ details summary::-webkit-details-marker { display: none; }
 details summary .chev { width: 14px; height: 14px; }
 details[open] > summary .chev { transform: rotate(90deg); }
 details summary:hover { color: var(--text); }
+/* «Подробнее» в карточке загрузки — кнопка, как в строках истории; «Журнал и цифры» внутри строки — ссылкой */
+details.more > summary { color: var(--text); font-size: 13.5px; border: 1px solid var(--border); background: var(--surface); padding: 5px 9px 5px 11px; border-radius: 9px; flex-direction: row-reverse; gap: 5px; }
+details.more > summary .chev { color: var(--muted); transform: rotate(90deg); }
+details.more[open] > summary .chev { transform: rotate(-90deg); }
+details.more > summary:hover { background: var(--surface-2); }
 .h-detail details.more { margin-top: 14px; }
+.h-detail details.more > summary { border: none; background: none; padding: 2px 0; color: var(--muted); font-size: 13px; flex-direction: row; }
+.h-detail details.more > summary .chev { transform: none; }
+.h-detail details.more[open] > summary .chev { transform: rotate(90deg); }
 .facts { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 8px 16px; margin: 12px 0 0; }
 .facts div { min-width: 0; }
 .facts dt { font-size: 11.5px; color: var(--faint); }

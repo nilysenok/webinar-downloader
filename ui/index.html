@@ -27,11 +27,13 @@
     <div class="modes" id="modes" role="radiogroup" aria-label="Что скачать">
       <button type="button" role="radio" data-mode="audio">
         <span class="mode-ic"><i data-icon="music"></i></span>
-        <span><b>Аудио</b><small>MP3 · голоса всех участников в одном файле</small></span>
+        <span><b>Аудио</b><small>MP3 · все голоса в одном файле</small></span>
+        <span class="tick"><i data-icon="check"></i></span>
       </button>
       <button type="button" role="radio" data-mode="av">
         <span class="mode-ic"><i data-icon="video"></i></span>
-        <span><b>Видео</b><small>MP4 · все камеры на одном экране, со звуком</small></span>
+        <span><b>Видео</b><small>MP4 · все камеры на одном экране</small></span>
+        <span class="tick"><i data-icon="check"></i></span>
       </button>
     </div>
     <div class="form-err" id="formErr" role="alert"></div>
@@ -50,6 +52,7 @@
 
 <div class="player" id="player">
   <div class="player-in">
+    <span class="kind"><i data-icon="music"></i></span>
     <div class="pt" id="playerTitle"></div>
     <audio id="audio" controls preload="none"></audio>
     <button class="ghost icon" id="playerClose" title="Закрыть"><i data-icon="x"></i></button>

@@ -21,7 +21,7 @@
 [hidden] { display: none !important; }
 html, body { margin: 0; }
 body { background: var(--bg); color: var(--text); font: 15px/1.45 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; -webkit-font-smoothing: antialiased; }
-body.has-player { padding-bottom: 88px; }
+body.has-player { padding-bottom: 104px; }
 .wrap { max-width: 880px; margin: 0 auto; padding: 24px 16px 72px; }
 .num { font-variant-numeric: tabular-nums; }
 svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; flex: none; }
@@ -78,6 +78,9 @@ input[type=url]:focus { border-color: color-mix(in srgb, var(--accent) 55%, var(
 .modes small { display: block; color: var(--muted); font-size: 13px; line-height: 1.35; margin-top: 1px; }
 .modes button.on { border-color: var(--accent); background: var(--surface); }
 .modes button.on .mode-ic { background: var(--accent); color: var(--accent-text); }
+.tick { margin-left: auto; width: 22px; height: 22px; border-radius: 50%; border: 1.5px solid var(--border-2); display: grid; place-items: center; color: transparent; flex: none; transition: background .15s, border-color .15s; }
+.tick .i { width: 13px; height: 13px; stroke-width: 3; }
+.modes button.on .tick { background: var(--accent); border-color: var(--accent); color: var(--accent-text); }
 .form-err { color: var(--err); font-size: 14px; margin-top: 10px; }
 .form-err:empty { display: none; }
 
@@ -97,7 +100,8 @@ input[type=url]:focus { border-color: color-mix(in srgb, var(--accent) 55%, var(
 .h-actions { display: flex; gap: 6px; flex: none; }
 .h-actions button.primary { background: var(--accent-soft); border-color: transparent; color: var(--accent); }
 .h-actions button.primary:hover { background: var(--accent); border-color: var(--accent); color: var(--accent-text); }
-.more-btn { display: inline-flex; align-items: center; gap: 7px; color: var(--muted); flex: none; }
+.more-btn { flex: none; gap: 5px; padding-right: 9px; }
+.more-btn .chev { color: var(--muted); }
 .chev { width: 15px; height: 15px; transition: transform .15s; }
 .h-item.open > .h-row .chev { transform: rotate(180deg); }
 .badge { font-size: 12px; font-weight: 500; padding: 0 8px; border-radius: 99px; }
@@ -116,9 +120,10 @@ input[type=url]:focus { border-color: color-mix(in srgb, var(--accent) 55%, var(
 .tools { display: flex; gap: 6px; flex-wrap: wrap; }
 
 /* плеер и просмотр */
-.player { position: fixed; left: 0; right: 0; bottom: 0; background: var(--surface); border-top: 1px solid var(--border); padding: 12px 16px; display: none; z-index: 5; }
+.player { position: fixed; left: 50%; bottom: 16px; transform: translateX(-50%); width: min(880px, calc(100% - 32px)); background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 8px 8px 8px 10px; box-shadow: 0 10px 34px rgba(0,0,0,.12), 0 2px 6px rgba(0,0,0,.05); display: none; z-index: 5; }
 .player.on { display: block; }
-.player-in { max-width: 880px; margin: 0 auto; display: flex; align-items: center; gap: 14px; }
+.player-in { display: flex; align-items: center; gap: 12px; }
+.player .kind { background: var(--accent-soft); color: var(--accent); }
 .player .pt { font-weight: 600; font-size: 14px; max-width: 30%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .player audio { flex: 1; min-width: 0; height: 40px; }
 .viewer { position: fixed; inset: 0; background: rgba(10,10,9,.86); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); display: grid; place-items: center; padding: 24px; z-index: 10; }
@@ -140,7 +145,7 @@ input[type=url]:focus { border-color: color-mix(in srgb, var(--accent) 55%, var(
   .h-actions { width: 100%; padding-left: 52px; }
   .h-actions:empty { display: none; }
   .h-actions { width: auto; flex: 1; }
-  .more-btn { margin-left: 41px; }  /* текст — по левому краю кнопок строки (отступ 52 − поле кнопки 11) */
+  .more-btn { margin-left: 52px; }  /* по левому краю кнопок строки */
   .h-detail { padding: 0 12px 14px; }
   .player .pt { display: none; }
 }
