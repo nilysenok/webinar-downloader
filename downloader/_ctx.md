@@ -6,7 +6,7 @@
 и складывает итог в папку загрузки. Не знает про HTTP-сервер и UI.
 
 ## КОНТРАКТ
-- всё, что зависит от ОС, — в `osdeps.py`: `font()` (шрифт с кириллицей: Arial / Arial·Segoe UI / DejaVu·Liberation·Noto, иначе `fc-match`; нет — общий экран без подписей), `filter_path()` (путь для фильтра ffmpeg, `C\:` экранирован), `Awake` (не спать: caffeinate / SetThreadExecutionState / systemd-inhibit), `reveal()` (Finder / Проводник / xdg-open)
+- всё, что зависит от ОС, — в `osdeps.py`: `font()` (шрифт с кириллицей: Arial / Arial·Segoe UI / DejaVu·Liberation·Noto, иначе `fc-match`; нет — общий экран без подписей), `filter_path()` (путь для фильтра ffmpeg, `C\:` экранирован), `Awake` (не спать: caffeinate / SetThreadExecutionState / systemd-inhibit), `reveal()` (Finder / Проводник / xdg-open), `utf8_console()` (вывод в UTF-8 — зовут сервер и CLI при старте)
 - `Job(url, mode, quality, streams, workers, gallery=True)` + `await run(job)` — выполняет задачу; наружу не бросает, итог в `job.status / error / outputs / log`
 - статусы: `queued → meta → download → mix → mux → done | error | cancelled | interrupted`
 - `await analyze(client, url)` → `{sid, title, date, duration, tracks}`; у дорожки `variants`, `has_audio`, `kind`; в `variants` только потоки, где init-сегмент содержит видео, размер — настоящий из `tkhd` (`boxes.video_size`)
@@ -78,3 +78,4 @@
 - `gallery.render`: `-reinit_filter 0` перед каждым видеовходом — MTS Link меняет размер кадра внутри потока, без флага граф пересобирается на каждую смену, источники color начинают с нуля и сборка встаёт (ИФР, 28.09; тест `test_frame_size_change_inside_stream`)
 - `pipeline.job_folder`: если `job.folder` уже задан, он возвращается как есть — иначе перезапуск уедет в новую папку и докачка сломается
 - `limits.raise_open_files()` в начале `_run`: без него дашборд из `start.command` падает `[Errno 24] Too many open files` на первом сегменте при 256 потоках (29.09, воспроизведено: лимит 256 → ошибка, с подъёмом → 315 сегментов за 45 с; тест `test_limits.py`)
+- `osdeps.utf8_console()` в начале `server.app` и `cli.main`, `PYTHONUTF8=1` в `start.bat`: без них в Windows при перенаправленном выводе (cp1252) сервер падал на первом print с кириллицей (CI 29.09; тест `test_osdeps`)

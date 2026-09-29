@@ -159,5 +159,6 @@ app.mount("/", StaticFiles(directory=ROOT / "ui", html=True), name="ui")
 
 
 if __name__ == "__main__":
+    osdeps.utf8_console()
     print(f"Дашборд: http://127.0.0.1:{PORT}  (Ctrl+C — остановить)")
     uvicorn.run(app, host="127.0.0.1", port=PORT, log_level="warning")

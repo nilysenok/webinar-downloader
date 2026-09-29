@@ -77,6 +77,7 @@
 - [downloader] `gallery.render`: `-reinit_filter 0` перед каждым видеовходом — MTS Link меняет размер кадра внутри потока, без флага граф пересобирается на каждую смену, источники color начинают с нуля и сборка встаёт (ИФР, 28.09; тест `test_frame_size_change_inside_stream`)
 - [downloader] `pipeline.job_folder`: если `job.folder` уже задан, он возвращается как есть — иначе перезапуск уедет в новую папку и докачка сломается
 - [downloader] `limits.raise_open_files()` в начале `_run`: без него дашборд из `start.command` падает `[Errno 24] Too many open files` на первом сегменте при 256 потоках (29.09, воспроизведено: лимит 256 → ошибка, с подъёмом → 315 сегментов за 45 с; тест `test_limits.py`)
+- [downloader] `osdeps.utf8_console()` в начале `server.app` и `cli.main`, `PYTHONUTF8=1` в `start.bat`: без них в Windows при перенаправленном выводе (cp1252) сервер падал на первом print с кириллицей (CI 29.09; тест `test_osdeps`)
 - [rust-core] `decode.rs`: сдвиг позиций по `tfdt` первого фрагмента — symphonia его не учитывает, без сдвига `--from/--to` дают тишину
 - [rust-core] `cache.rs`: уникальное временное имя в `write_atomic` — общий `.part` роняет загрузку при дублях сегмента
 - [rust-core] `fetch.rs`: приоритетная очередь с исходным приоритетом при повторе — замена на «задача на сегмент + семафор» вернёт простой сведения

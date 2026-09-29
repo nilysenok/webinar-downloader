@@ -45,6 +45,14 @@ def filter_path(p: Path) -> str:
     return p.as_posix().replace("'", r"'\''").replace(":", r"\:")
 
 
+def utf8_console():
+    """Вывод в UTF-8 на любой ОС. В Windows при перенаправленном выводе Python берёт cp1252,
+    и первый же print с кириллицей роняет программу (CI 29.09: сервер падал при старте)."""
+    for s in (sys.stdout, sys.stderr):
+        if hasattr(s, "reconfigure"):
+            s.reconfigure(encoding="utf-8", errors="replace")
+
+
 class Awake:
     """Не даёт компьютеру уснуть, пока идёт загрузка (урок Hustle): start() / stop(), повторные вызовы безопасны."""
     ES_CONTINUOUS, ES_SYSTEM_REQUIRED = 0x80000000, 0x00000001

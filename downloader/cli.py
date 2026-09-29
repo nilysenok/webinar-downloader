@@ -7,7 +7,7 @@ import asyncio
 
 from .config import DEFAULT_WORKERS, MODES
 from .models import Job
-from .osdeps import Awake
+from .osdeps import Awake, utf8_console
 from .pipeline import run
 
 
@@ -22,6 +22,7 @@ async def _watch(job: Job):
 
 
 def main():
+    utf8_console()
     ap = argparse.ArgumentParser(description="Скачать запись MTS Link")
     ap.add_argument("url")
     ap.add_argument("--mode", choices=list(MODES), default="audio")

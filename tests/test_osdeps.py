@@ -1,3 +1,6 @@
+import os
+import subprocess
+import sys
 import unittest
 from pathlib import Path
 from unittest import mock
@@ -25,6 +28,14 @@ class OsDeps(unittest.TestCase):
         from downloader import tiles
         with mock.patch.object(tiles, "has_filter", return_value=False):
             self.assertEqual(tiles.text("t.txt", 30, True), "null")
+
+    def test_console_survives_a_non_utf8_pipe(self):
+        # так было в Windows: вывод в cp1252, первый print с кириллицей ронял сервер
+        env = {k: v for k, v in os.environ.items() if k != "PYTHONUTF8"} | {"PYTHONIOENCODING": "cp1252"}
+        code = "from downloader.osdeps import utf8_console; utf8_console(); print('Дашборд — готов')"
+        r = subprocess.run([sys.executable, "-c", code], capture_output=True, env=env, cwd=Path(__file__).parent.parent)
+        self.assertEqual(r.returncode, 0, r.stderr.decode(errors="replace"))
+        self.assertIn("Дашборд — готов", r.stdout.decode("utf-8"))
 
     def test_awake_start_stop_are_idempotent(self):
         a = osdeps.Awake()

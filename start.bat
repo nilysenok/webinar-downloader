@@ -1,6 +1,8 @@
 @echo off
 rem Windows: двойной клик — поднимает локальный сервер и открывает дашборд в браузере.
 chcp 65001 >nul
+rem Python в режиме UTF-8: иначе в Windows вывод и файлы по умолчанию в cp1252/cp1251 — кириллица роняет программу
+set PYTHONUTF8=1
 cd /d "%~dp0"
 if "%PORT%"=="" set PORT=8765
 set URL=http://127.0.0.1:%PORT%
