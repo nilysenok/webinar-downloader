@@ -25,7 +25,7 @@ function actions(j) {
   const a = [];
   if (j.status !== "done") a.push(btn(j, "restart", `${icon("play")}Продолжить`, `class="primary sm" title="Докачает с места остановки"`));
   else if (main >= 0) a.push(btn(j, "play", `${icon("play")}${outs[main].path.endsWith(".mp3") ? "Слушать" : "Смотреть"}`, `class="primary sm" data-n="${main}"`));
-  if (outs.some(o => o.exists) || j.folder) a.push(btn(j, "reveal", `${icon("folder")}В Finder`, `title="Показать файл в Finder"`));
+  if (outs.some(o => o.exists) || j.folder) a.push(btn(j, "reveal", `${icon("folder")}<span class="lbl">В Finder</span>`, `class="sm reveal" title="Показать файл в Finder"`));
   return a.join("");
 }
 
