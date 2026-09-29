@@ -26,7 +26,7 @@ def main():
     ap.add_argument("--mode", choices=list(MODES), default="audio")
     ap.add_argument("--quality", default="best")
     ap.add_argument("--workers", type=int, default=DEFAULT_WORKERS)
-    ap.add_argument("--no-gallery", action="store_true", help="без общего экрана всех камер")
+    ap.add_argument("--no-gallery", action="store_true", help="без общего экрана: вместо него видео каждого отдельным файлом")
     a = ap.parse_args()
     job = Job(a.url, mode=a.mode, quality=a.quality, workers=a.workers, gallery=not a.no_gallery)
     asyncio.run(_watch(job))

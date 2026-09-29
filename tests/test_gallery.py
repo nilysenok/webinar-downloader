@@ -98,8 +98,8 @@ class RenderTest(unittest.TestCase):
             files = {(1, "v"): d / "v.mp4", (2, "v"): d / "nov.mp4", (1, "a"): d / "a1.m4a", (2, "a"): d / "a2.m4a"}
             asyncio.run(pipeline._mux_all(job, tracks, files, d / "mix.m4a", d, "t"))
             self.assertIn("камера выключена", " ".join(x["msg"] for x in job.log))  # «видео» Ильи без кадров
-            self.assertEqual(len(job.outputs), 2)
-            out = Path(job.outputs[1]["path"])
+            self.assertEqual(len(job.outputs), 1, "с общим экраном — один файл, без отдельных видео")
+            out = Path(job.outputs[0]["path"])
             self.assertEqual(out.name, "t — общий экран.mp4")
             self.assertEqual(job.mux_done, job.mux_total)
             c = (tiles.W // 2, tiles.H // 2)
@@ -114,6 +114,20 @@ class RenderTest(unittest.TestCase):
                                       "-of", "csv=p=0", str(out)], capture_output=True, text=True).stdout.split()
             self.assertEqual(streams[:2], ["video", "audio"])
             self.assertAlmostEqual(float(streams[2]), 60.0, delta=0.2)
+
+    def test_without_gallery_each_video_is_its_own_file(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            d = Path(tmp)
+            vp9(d / "v1.mp4", 2, "red")
+            vp9(d / "v2.mp4", 2, "blue")
+            job = Job("u", mode="video", title="t", duration=4.0, folder=str(d), gallery=False)
+            tracks = [Track(1, "Анна", 0.0, 2, video=True, height=180), Track(2, "Илья", 2.0, 2, video=True, height=180)]
+            files = {(1, "v"): d / "v1.mp4", (2, "v"): d / "v2.mp4"}
+            asyncio.run(pipeline._mux_all(job, tracks, files, None, d, "t"))
+            names = [Path(o["path"]).name for o in job.outputs]
+            self.assertEqual(len(names), 2)
+            self.assertNotIn("t — общий экран.mp4", names)
+            self.assertEqual(job.mux_done, job.mux_total)
 
     def test_frame_size_change_inside_stream(self):
         """MTS Link меняет размер кадра посреди потока; без -reinit_filter 0 граф пересобирался с нуля."""

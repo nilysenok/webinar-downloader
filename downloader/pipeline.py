@@ -173,23 +173,24 @@ def _has_video(path: Path) -> bool:
 
 
 async def _mux_all(job: Job, tracks, files, mix, folder: Path, base: str):
-    """Видео каждого по отдельности (без перекодирования), затем общий экран."""
+    """С общим экраном — один файл: общий экран со звуком. Без него — видео каждого (без перекодирования)."""
     vids = [t for t in tracks if t.video]
     for t in [t for t in vids if not _has_video(files[(t.id, "v")])]:
         job.add_log("warn", f"{t.name} {hms(t.start)}: в потоке нет видео (камера выключена) — пропущено")
         vids.remove(t)
-    job.status, job.mux_total = "mux", len(vids) + (job.gallery and bool(vids))
+    solo = [] if job.gallery else vids  # общий экран строится из _work/, отдельные файлы ему не нужны
+    job.status, job.mux_total = "mux", len(solo) + (job.gallery and bool(vids))
     own = mix if job.mode == "av" else None  # «Только видео»: отдельные файлы без звука
-    for n, t in enumerate(vids, 1):
+    for n, t in enumerate(solo, 1):
         out = folder / sanitize(f"{base} — {gallery.label(t)} {hms(t.start)} {t.height}p.mp4")
-        job.add_log("info", f"Склейка видео {n}/{len(vids)}: {t.name}")
+        job.add_log("info", f"Склейка видео {n}/{len(solo)}: {t.name}")
         await mux_video(job, files[(t.id, "v")], out, own, t.start)
         job.outputs.append({"path": str(out), "size": out.stat().st_size})
         job.mux_done = n
-    if job.mux_total > len(vids):
+    if job.mux_total > len(solo):
         out = folder / sanitize(f"{base} — общий экран.mp4")
         audios = {t.id: files[(t.id, "a")] for t in tracks if (t.id, "a") in files}
         await gallery.render(job, tracks, {t.id: files[(t.id, "v")] for t in vids}, audios, mix, out,
-                             on_time=lambda s: setattr(job, "mux_done", len(vids) + min(s / job.duration, 1)))
+                             on_time=lambda s: setattr(job, "mux_done", min(s / job.duration, 1)))
         job.outputs.append({"path": str(out), "size": out.stat().st_size})
         job.mux_done = job.mux_total
