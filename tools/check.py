@@ -16,7 +16,7 @@ def code_files(root: Path):
         rel = p.relative_to(root)
         if p.is_file() and p.suffix in CODE_EXT and p.name not in GENERATED \
                 and not any(part in CODE_SKIP for part in rel.parts):
-            yield p, rel
+            yield p, rel.as_posix()  # в сообщениях путь через «/» на любой ОС
 
 
 def check_code(root: Path, errors, warnings):
@@ -72,7 +72,7 @@ def check_closed(root: Path, modules, errors):
             continue
         for i, ln in enumerate(p.read_text(encoding="utf-8").splitlines(), 1):
             if "✅" in ln or ln.lstrip().startswith("- [x]"):
-                errors.append(f"{p.relative_to(root)}:{i}: закрытая строка — перенести в arhiv.md")
+                errors.append(f"{p.relative_to(root).as_posix()}:{i}: закрытая строка — перенести в arhiv.md")
 
 
 def validate(root: Path, modules, roadmap_bad, archive_bad, stages):
