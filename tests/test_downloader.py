@@ -12,7 +12,7 @@ from downloader.models import Track
 
 REC = {"name": "Вебинар", "createAt": "2026-09-22T12:22:20+0300", "duration": 100, "eventLogs": [
     {"module": "conference.add", "data": {"id": 1, "user": {"nickname": "Анна"}}},
-    {"module": "conference.add", "data": {"id": 2, "user": {"name": "Илья", "secondName": "Сорокин"}}},
+    {"module": "conference.add", "data": {"id": 2, "user": {"name": "Илья", "secondName": "Петров"}}},
     {"module": "mediasession.add", "relativeTime": 5.5,
      "data": {"id": 10, "hlsUrl": "https://h/x/playlist.m3u8", "stream": {"conference": {"id": 1}}}},
     {"module": "mediasession.add", "relativeTime": 30,
@@ -48,7 +48,7 @@ class ParseTest(unittest.TestCase):
     def test_parse_record(self):
         tracks, hls = parse_record(REC)
         self.assertEqual([t.id for t in tracks], [10, 11])
-        self.assertEqual([t.name for t in tracks], ["Анна", "Илья Сорокин"])
+        self.assertEqual([t.name for t in tracks], ["Анна", "Илья Петров"])
         self.assertEqual((tracks[0].start, tracks[0].duration, tracks[1].duration), (5.5, 60.0, 0.0))
         self.assertEqual(hls[1], "https://h/y/playlist.m3u8")
 

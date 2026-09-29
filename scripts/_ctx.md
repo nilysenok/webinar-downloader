@@ -12,7 +12,7 @@
 - `requirements.txt`: fastapi, uvicorn, httpx; внешняя зависимость — `ffmpeg`/`ffprobe` (Homebrew)
 - `xtask.py` + `tools/` — сборщик и валидатор канона; `tests/` — unittest
 - `scripts/asr/` — замер распознавания речи (этап 9): `setup.sh` (whisper-cpp, `.venv-asr` с mlx-whisper, модели в `~/.cache`) → `tracks.sh <ссылка>` → `vad.py` → `run_cpp.sh` / `run_mlx.py` → `merge.py cpp|mlx` → `score.py cpp mlx`; `etalon.py` и `diff10.py` не перезаписывают выверенное без `--force`; `etalon2.py cpp embC300` — слепой эталон 7×2 мин (27.09): черновик из двух движков, расхождения «[x / y]» в случайном порядке, ключ в `etalon/.key.json`; `score.py` не считает, пока в эталоне есть невыбранные скобки; всё одной строкой — `run_all.sh <ссылка>`
-- git: приватный GitHub `nilysenok/mts-link-downloader` (origin, push после каждой сессии); в git не идут `.venv/`, `downloads/`, `tracks/`, `history.json`
+- git: публичный GitHub `nilysenok/webinar-downloader` (origin, push после каждой сессии; старый адрес mts-link-downloader перенаправляется); в git не идут `.venv/`, `downloads/`, `tracks/`, `history.json`
 
 ## ИНВАРИАНТЫ
 - Python для проекта — только `.venv/bin/python` (3.12); исключение — `.venv-asr/` только для mlx-whisper (тянет torch)
@@ -33,7 +33,8 @@
 
 ## ПЕЧАТИ
 Ъ — сборщик канона: `python xtask.py`, валидатор `python xtask.py --check` (вместо cargo xtask) (25.09)
-Ъ — репозиторий: приватный GitHub `mts-link-downloader` (25.09)
+Ъ — репозиторий публичный, `nilysenok/webinar-downloader`, MIT, со всей историей: владелец выбрал открыть текущий, зная, что в старых коммитах имена участников, ссылки на записи и прежний файл правил; в текущих файлах имён нет (29.09)
+Ъ — в git не попадают записи, расшифровки, история загрузок и имена участников настоящих вебинаров: всё это в `downloads/` и `history.json` (в .gitignore); в тестах и снимках — только вымышленные (29.09)
 
 ## ЖДУНЫ
 —

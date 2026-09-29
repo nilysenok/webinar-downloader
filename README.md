@@ -26,8 +26,8 @@
 brew install ffmpeg python@3.12
 
 # 2. проект
-git clone https://github.com/nilysenok/mts-link-downloader.git
-cd mts-link-downloader
+git clone https://github.com/nilysenok/webinar-downloader.git
+cd webinar-downloader
 ```
 
 Дальше ничего ставить руками не нужно: при первом запуске `start.command` сам создаст окружение `.venv` и поставит зависимости из `requirements.txt`.
@@ -122,6 +122,6 @@ scripts/asr/setup.sh
 
 Устройство проекта описано в md-файлах рядом с кодом: `pravila.md` — правила работы, `spec.md` — словарь и лимиты, `<модуль>/_ctx.md` — всё о модуле, `ROOT.md` и `dashboard.html` — сводка (собирается `xtask.py`, руками не правится). Модули: `downloader/` — загрузка и сборка файлов, `server/` — сервер дашборда, `ui/` — интерфейс, `scripts/` — запуск и окружение.
 
-## Автор
+## Автор и лицензия
 
-Nikita Lysenok
+Nikita Lysenok · [MIT](LICENSE)
