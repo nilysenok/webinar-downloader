@@ -23,7 +23,7 @@
 | [ui](ui/_ctx.md) | ФРОНТЕНД | в работе | 2 | 0 | 0 | 0 |
 | [downloader](downloader/_ctx.md) | БЭКЕНД | в работе | 7 | 0 | 3 | 1 |
 | [rust-cli](rust-cli/_ctx.md) | БЭКЕНД | в работе | 1 | 0 | 0 | 0 |
-| [rust-core](rust-core/_ctx.md) | БЭКЕНД | в работе | 7 | 0 | 3 | 1 |
+| [rust-core](rust-core/_ctx.md) | БЭКЕНД | в работе | 6 | 0 | 3 | 1 |
 | [rust-server](rust-server/_ctx.md) | БЭКЕНД | в работе | 1 | 0 | 0 | 0 |
 | [scripts](scripts/_ctx.md) | БЭКЕНД | в работе | 1 | 0 | 1 | 0 |
 | [server](server/_ctx.md) | БЭКЕНД | стабильно | 2 | 0 | 0 | 0 |
@@ -102,6 +102,7 @@
 - [rust-core] Opus: `use_cbr = true` обязателен — в VBR opus-rs игнорирует битрейт (24 кбит/с → 53–74 кбит/с, замер 25.09)
 - [rust-core] частота дорожек только 48 кГц (иначе ошибка); ресемплинга входа нет — на реальных записях другой не встречалась
 - [rust-core] AudioToolbox FFI написан вручную (без bindgen); проверен только на macOS arm64
+- [rust-core] ветка `transcript`: `core/src/transcribe/model.rs` — 212 строк, больше лимита 200; делить при следующей правке (29.09)
 - [rust-core] `--video-height` и имя папки кэша `v<высота>` — по RESOLUTION из master, а он врёт (640×480 у всех); при нескольких вариантах выбор неточен. Реальный размер файла — из `tkhd` (29.09)
 - [rust-core] `--list` у сессии без `mediasession.update` показывает длину 0 (ИФР: Берзон «14:18 – 14:18», реально ~1,5 ч видео) — длина берётся из JSON записи (29.09)
 - [rust-server] `ui/` лежит вне крейта (`include_bytes!("../../ui/…")`) — для `cargo publish` понадобится копия внутри крейта или build.rs
