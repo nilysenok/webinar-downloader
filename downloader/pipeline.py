@@ -10,6 +10,7 @@ from .config import DOWNLOADS, MODES, TIMEOUT, UA
 from . import gallery
 from .boxes import video_size
 from .hls import Cancelled, analyze, fetch, parse_media, pick_variant
+from .limits import enough_for, raise_open_files
 from .media import concat, mix_audio, mux_video
 from .models import Job
 
@@ -57,6 +58,8 @@ async def run(job: Job):
 async def _run(job: Job):
     job.status, job.started = "meta", time.time()
     job.add_log("info", f"Старт: {MODES.get(job.mode, job.mode)}, потоков {job.workers}")
+    if (nofile := raise_open_files()) < enough_for(job.workers):
+        job.add_log("warn", f"Лимит открытых файлов {nofile} — на {job.workers} потоков может не хватить")
     limits = httpx.Limits(max_connections=job.workers, max_keepalive_connections=job.workers)
     async with httpx.AsyncClient(headers={"User-Agent": UA}, timeout=TIMEOUT, limits=limits,
                                  follow_redirects=True) as client:
