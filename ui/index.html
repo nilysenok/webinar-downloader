@@ -12,7 +12,7 @@
 <body>
 <div class="wrap">
   <header class="top">
-    <span class="logo"><svg viewBox="0 0 24 24"><path d="M12 5v10m-4-4 4 4 4-4M7 19h10"/></svg></span>
+    <span class="logo"><i data-icon="download"></i></span>
     <span class="brand">MTS Link <b>Загрузчик</b></span>
   </header>
 
@@ -26,11 +26,11 @@
     <div class="preview" id="preview" hidden></div>
     <div class="modes" id="modes" role="radiogroup" aria-label="Что скачать">
       <button type="button" role="radio" data-mode="audio">
-        <svg viewBox="0 0 24 24"><path d="M9 18V6l10-2v12M9 18a3 3 0 1 1-6 0 3 3 0 0 1 6 0Zm10-2a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"/></svg>
+        <span class="mode-ic"><i data-icon="music"></i></span>
         <span><b>Аудио</b><small>MP3 · голоса всех участников в одном файле</small></span>
       </button>
       <button type="button" role="radio" data-mode="av">
-        <svg viewBox="0 0 24 24"><rect x="3" y="6" width="13" height="12" rx="2"/><path d="m16 10 5-3v10l-5-3"/></svg>
+        <span class="mode-ic"><i data-icon="video"></i></span>
         <span><b>Видео</b><small>MP4 · все камеры на одном экране, со звуком</small></span>
       </button>
     </div>
@@ -52,13 +52,13 @@
   <div class="player-in">
     <div class="pt" id="playerTitle"></div>
     <audio id="audio" controls preload="none"></audio>
-    <button class="ghost icon" id="playerClose" title="Закрыть">✕</button>
+    <button class="ghost icon" id="playerClose" title="Закрыть"><i data-icon="x"></i></button>
   </div>
 </div>
 
 <div class="viewer" id="viewer" hidden>
   <div class="viewer-in">
-    <div class="viewer-head"><span id="viewerTitle"></span><button class="ghost icon" id="viewerClose" title="Закрыть (Esc)">✕</button></div>
+    <div class="viewer-head"><span id="viewerTitle"></span><button class="ghost icon" id="viewerClose" title="Закрыть (Esc)"><i data-icon="x"></i></button></div>
     <video id="video" controls playsinline preload="metadata"></video>
   </div>
 </div>

@@ -2,6 +2,7 @@
 import { activeCard } from "./board.js";
 import { initForm } from "./form.js";
 import { expanded, historyItem } from "./history.js";
+import { hydrate } from "./icons.js";
 import { openLogs } from "./more.js";
 import { initPlayer, play } from "./player.js";
 import { $, ACTIVE, api } from "./util.js";
@@ -60,6 +61,7 @@ document.addEventListener("toggle", e => {
 }, true);
 window.addEventListener("resize", () => { lastHistory = ""; render(); });
 
+hydrate();
 initPlayer();
 initForm(refresh);
 refresh();

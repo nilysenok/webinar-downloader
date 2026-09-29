@@ -1,4 +1,5 @@
 // Форма новой загрузки: ссылка, режим, короткая сводка о записи. Камеры и число соединений — по умолчанию сервера.
+import { icon } from "./icons.js";
 import { $, api, dur, esc, plural, store } from "./util.js";
 
 const state = { mode: "audio", url: "", info: null, busy: false, error: "" };
@@ -44,14 +45,14 @@ function summary(a) {
   const cams = new Set(a.tracks.filter(t => t.variants.length).map(t => t.name)).size;
   const parts = [`<span class="num">${dur(a.duration)}</span>`, plural(people, "участник", "участника", "участников")];
   if (state.mode === "av") parts.push(cams ? plural(cams, "камера", "камеры", "камер") : `<span class="bad">камер в записи нет — выберите «Аудио»</span>`);
-  return `<svg viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg><div><b>${esc(a.title)}</b><span>${parts.join(" · ")}</span></div>`;
+  return `${icon("check")}<div><b>${esc(a.title)}</b><span>${parts.join(" · ")}</span></div>`;
 }
 
 function renderPreview() {
   const p = $("preview");
   p.hidden = !state.busy && !state.info && !state.error;
   p.className = "preview" + (state.error ? " err" : state.busy ? " busy" : "");
-  if (state.error) p.innerHTML = `<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 8v5m0 3v.01"/></svg><div>${esc(state.error)}</div>`;
+  if (state.error) p.innerHTML = `${icon("alert")}<div>${esc(state.error)}</div>`;
   else if (state.busy) p.innerHTML = `<i class="spin"></i><div>Смотрю запись…</div>`;
   else if (state.info) p.innerHTML = summary(state.info);
 }

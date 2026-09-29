@@ -1,4 +1,5 @@
 // Строка истории: главное действие сразу, файлы и служебное — в раскрытой строке.
+import { icon } from "./icons.js";
 import { moreBlock } from "./more.js";
 import { playable } from "./player.js";
 import { bytes, date, dur, esc, fileName } from "./util.js";
@@ -22,9 +23,9 @@ function actions(j) {
   const outs = j.outputs || [];
   const main = outs.findIndex(o => o.exists && playable(o.path));
   const a = [];
-  if (j.status !== "done") a.push(btn(j, "restart", "Продолжить", `class="primary sm" title="Докачает с места остановки"`));
-  else if (main >= 0) a.push(btn(j, "play", outs[main].path.endsWith(".mp3") ? "▶ Слушать" : "▶ Смотреть", `class="primary sm" data-n="${main}"`));
-  if (outs.some(o => o.exists) || j.folder) a.push(btn(j, "reveal", "В Finder", `title="Показать файл в Finder"`));
+  if (j.status !== "done") a.push(btn(j, "restart", `${icon("play")}Продолжить`, `class="primary sm" title="Докачает с места остановки"`));
+  else if (main >= 0) a.push(btn(j, "play", `${icon("play")}${outs[main].path.endsWith(".mp3") ? "Слушать" : "Смотреть"}`, `class="primary sm" data-n="${main}"`));
+  if (outs.some(o => o.exists) || j.folder) a.push(btn(j, "reveal", `${icon("folder")}В Finder`, `title="Показать файл в Finder"`));
   return a.join("");
 }
 
@@ -32,14 +33,14 @@ function actions(j) {
 function files(j) {
   const outs = (j.outputs || []).map((o, i) => ({ ...o, i })).sort((a, b) => playable(b.path) - playable(a.path));
   return outs.map(o => `<li><span class="fn" title="${esc(o.path)}">${esc(fileName(o.path))}</span><span class="num sz">${bytes(o.size)}</span>
-    ${o.exists ? `${playable(o.path) ? `<button class="ghost sm" data-act="play" data-id="${j.id}" data-n="${o.i}">▶</button>` : ""}<a href="/files/${j.id}/${o.i}?dl=1" title="Скачать">↓</a>` : `<span class="bad">нет файла</span>`}</li>`).join("");
+    ${o.exists ? `${playable(o.path) ? `<button class="ghost sm" data-act="play" data-id="${j.id}" data-n="${o.i}" title="Открыть">${icon("play")}</button>` : ""}<a href="/files/${j.id}/${o.i}?dl=1" title="Сохранить файл">${icon("save")}</a>` : `<span class="bad">нет файла</span>`}</li>`).join("");
 }
 
 function detail(j) {
   const list = files(j);
   const tools = [
-    j.status === "done" && btn(j, "restart", "Скачать заново", `title="В ту же папку; уже скачанное не качается повторно"`),
-    j.work_size && btn(j, "clean", `Удалить промежуточные · ${bytes(j.work_size)}`, `title="Кусочки записи для докачки; готовые файлы останутся"`),
+    j.status === "done" && btn(j, "restart", `${icon("redo")}Скачать заново`, `title="В ту же папку; уже скачанное не качается повторно"`),
+    j.work_size && btn(j, "clean", `${icon("trash")}Удалить промежуточные · ${bytes(j.work_size)}`, `title="Кусочки записи для докачки; готовые файлы останутся"`),
     btn(j, "delete", "Убрать из списка", `class="ghost" title="Файлы на диске останутся"`),
   ].filter(Boolean).join("");
   return `<div class="h-detail">
@@ -54,12 +55,10 @@ export function historyItem(j) {
   const open = expanded.has(j.id);
   return `<div class="h-item${open ? " open" : ""}">
     <div class="h-row" data-toggle="${j.id}">
-      <span class="kind ${j.mode === "audio" ? "a" : "v"}">${j.mode === "audio"
-        ? `<svg viewBox="0 0 24 24"><path d="M9 18V6l10-2v12M9 18a3 3 0 1 1-6 0 3 3 0 0 1 6 0Zm10-2a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"/></svg>`
-        : `<svg viewBox="0 0 24 24"><rect x="3" y="6" width="13" height="12" rx="2"/><path d="m16 10 5-3v10l-5-3"/></svg>`}</span>
+      <span class="kind ${j.mode === "audio" ? "a" : "v"}">${icon(j.mode === "audio" ? "music" : "video")}</span>
       <div class="h-main"><div class="h-title">${esc(j.title || j.url)}</div><div class="h-meta">${meta(j)}</div></div>
       <div class="h-actions">${actions(j)}</div>
-      <button type="button" class="ghost sm more-btn" aria-expanded="${open}">Подробнее<span class="chev" aria-hidden="true"></span></button>
+      <button type="button" class="ghost sm more-btn" aria-expanded="${open}">Подробнее${icon("down", "chev")}</button>
     </div>
     ${open ? detail(j) : ""}
   </div>`;

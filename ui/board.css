@@ -30,10 +30,10 @@
 
 /* подробности */
 details.more { margin-top: 12px; border-top: 1px solid var(--border); padding-top: 10px; }
-details summary { cursor: pointer; color: var(--muted); font-size: 13px; user-select: none; list-style: none; display: inline-flex; align-items: center; gap: 6px; border-radius: 6px; }
+details summary { cursor: pointer; color: var(--muted); font-size: 13px; user-select: none; list-style: none; display: inline-flex; align-items: center; gap: 4px; border-radius: 6px; }
 details summary::-webkit-details-marker { display: none; }
-details summary::before { content: ""; width: 5px; height: 5px; border-right: 1.6px solid currentColor; border-bottom: 1.6px solid currentColor; transform: rotate(-45deg); transition: transform .15s; }
-details[open] > summary::before { transform: rotate(45deg); }
+details summary .chev { width: 14px; height: 14px; }
+details[open] > summary .chev { transform: rotate(90deg); }
 details summary:hover { color: var(--text); }
 .h-detail details.more { margin-top: 14px; }
 .facts { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 8px 16px; margin: 12px 0 0; }

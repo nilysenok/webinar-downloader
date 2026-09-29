@@ -1,4 +1,5 @@
 // «Подробности» загрузки для тех, кому интересно: дорожки участников на шкале записи, цифры, журнал.
+import { icon } from "./icons.js";
 import { bytes, clock, dur, esc } from "./util.js";
 
 export const openLogs = new Set();  // ключи открытых <details>: «id:more», «id:log»
@@ -36,7 +37,7 @@ function logBlock(j) {
   const key = `${j.id}:log`, w = j.log.filter(l => l.level === "warn").length;
   const lines = j.log.slice().reverse().map(l => `<div class="${l.level}"><time>${clock(l.t)}</time>${esc(l.msg)}</div>`).join("");
   return `<details class="log" data-log="${key}" ${openLogs.has(key) ? "open" : ""}>
-    <summary>Журнал · ${j.log.length}${w ? ` · <span class="w">предупреждений ${w}</span>` : ""}</summary>
+    <summary>${icon("right", "chev")}Журнал · ${j.log.length}${w ? ` · <span class="w">предупреждений ${w}</span>` : ""}</summary>
     <div class="log-body">${lines}</div></details>`;
 }
 
@@ -56,5 +57,5 @@ function facts(j) {
 export function moreBlock(j, label = "Подробнее") {
   const key = `${j.id}:more`;
   return `<details class="more" data-log="${key}" ${openLogs.has(key) ? "open" : ""}>
-    <summary>${label}</summary>${facts(j)}${timeline(j)}${logBlock(j)}</details>`;
+    <summary>${icon("right", "chev")}${label}</summary>${facts(j)}${timeline(j)}${logBlock(j)}</details>`;
 }

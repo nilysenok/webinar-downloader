@@ -5,7 +5,7 @@
   --ok: #1f8a4c; --ok-soft: #e3f3e9; --warn: #a86400; --warn-soft: #fbeed8; --err: #c0262d; --err-soft: #fdeced;
   --lane: #eeede8; --track: #d9d6cd; --fill: #1c1b19;
   --shadow: 0 1px 2px rgba(20,18,10,.04), 0 8px 24px -8px rgba(20,18,10,.08);
-  --ring: 0 0 0 4px rgba(227,38,47,.14);
+  --ring: 0 0 0 3px rgba(227,38,47,.10);
   --mono: ui-monospace, "SF Mono", Menlo, monospace;
 }
 @media (prefers-color-scheme: dark) {
@@ -14,7 +14,7 @@
     --text: #efede8; --muted: #a09d94; --faint: #6b6861;
     --accent: #ff4b53; --accent-2: #ff6168; --accent-soft: #3a1a1c; --accent-text: #fff;
     --ok: #4cc47f; --ok-soft: #173424; --warn: #e0a043; --warn-soft: #3a2c14; --err: #ff6b70; --err-soft: #3a1a1c;
-    --lane: #232321; --track: #3a3a36; --fill: #efede8; --shadow: none; --ring: 0 0 0 4px rgba(255,75,83,.2);
+    --lane: #232321; --track: #3a3a36; --fill: #efede8; --shadow: none; --ring: 0 0 0 3px rgba(255,75,83,.16);
   }
 }
 * { box-sizing: border-box; }
@@ -30,13 +30,16 @@ svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width:
 /* шапка */
 .top { display: flex; align-items: center; gap: 10px; margin-bottom: 20px; }
 .logo { display: grid; place-items: center; width: 30px; height: 30px; border-radius: 9px; background: var(--accent); color: #fff; }
-.logo svg { width: 18px; height: 18px; stroke-width: 2.4; }
+.logo svg { width: 18px; height: 18px; stroke-width: 2.2; }
+.i { width: 16px; height: 16px; stroke-width: 2; }
+.i.fill { fill: currentColor; stroke: none; }
+button .i.fill { width: 13px; height: 13px; }
 .brand { font-weight: 600; font-size: 15px; letter-spacing: -.01em; }
 .brand b { color: var(--muted); font-weight: 500; }
 h2 { font-size: 13px; letter-spacing: .02em; color: var(--muted); margin: 32px 2px 10px; font-weight: 600; }
 
 /* кнопки и поля */
-button { font: inherit; font-size: 14px; border: 1px solid var(--border); background: var(--surface); color: var(--text); border-radius: 9px; padding: 7px 13px; cursor: pointer; white-space: nowrap; transition: background .15s, border-color .15s, color .15s; }
+button { font: inherit; font-size: 14px; border: 1px solid var(--border); background: var(--surface); color: var(--text); border-radius: 9px; padding: 7px 13px; cursor: pointer; white-space: nowrap; transition: background .15s, border-color .15s, color .15s; display: inline-flex; align-items: center; justify-content: center; gap: 6px; }
 button:hover { background: var(--surface-2); }
 button:disabled { opacity: .5; cursor: default; }
 button:focus-visible, a:focus-visible, summary:focus-visible { outline: none; box-shadow: var(--ring); }
@@ -55,10 +58,10 @@ h1 { font-size: 26px; line-height: 1.2; margin: 0; letter-spacing: -.02em; }
 .url-row { display: flex; gap: 10px; }
 input[type=url] { flex: 1; min-width: 0; font: inherit; font-size: 16px; color: var(--text); background: var(--surface); border: 1.5px solid var(--border-2); border-radius: 12px; padding: 13px 15px; outline: none; transition: border-color .15s, box-shadow .15s; }
 input[type=url]::placeholder { color: var(--faint); }
-input[type=url]:focus { border-color: var(--accent); box-shadow: var(--ring); }
+input[type=url]:focus { border-color: color-mix(in srgb, var(--accent) 55%, var(--border-2)); box-shadow: var(--ring); }
 #go { padding: 0 26px; font-size: 15.5px; border-radius: 12px; }
 .preview { display: flex; align-items: center; gap: 10px; margin-top: 10px; padding: 10px 13px; border-radius: 11px; background: var(--ok-soft); font-size: 14px; }
-.preview > svg { color: var(--ok); }
+.preview > svg { color: var(--ok); width: 18px; height: 18px; }
 .preview div { min-width: 0; display: flex; flex-wrap: wrap; gap: 2px 10px; align-items: baseline; }
 .preview b { font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 100%; }
 .preview span { color: var(--muted); }
@@ -69,11 +72,12 @@ input[type=url]:focus { border-color: var(--accent); box-shadow: var(--ring); }
 @keyframes spin { to { transform: rotate(1turn); } }
 .modes { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 14px; }
 .modes button { display: flex; gap: 12px; align-items: center; text-align: left; padding: 13px 15px; border-radius: 13px; border: 1.5px solid var(--border); white-space: normal; }
-.modes button svg { width: 22px; height: 22px; color: var(--muted); }
+.mode-ic { display: grid; place-items: center; width: 40px; height: 40px; border-radius: 11px; flex: none; background: var(--surface-2); color: var(--muted); transition: background .15s, color .15s; }
+.mode-ic .i { width: 20px; height: 20px; }
 .modes b { display: block; font-size: 15px; }
 .modes small { display: block; color: var(--muted); font-size: 13px; line-height: 1.35; margin-top: 1px; }
-.modes button.on { border-color: var(--accent); background: var(--accent-soft); }
-.modes button.on svg { color: var(--accent); }
+.modes button.on { border-color: var(--accent); background: var(--surface); }
+.modes button.on .mode-ic { background: var(--accent); color: var(--accent-text); }
 .form-err { color: var(--err); font-size: 14px; margin-top: 10px; }
 .form-err:empty { display: none; }
 
@@ -86,7 +90,7 @@ input[type=url]:focus { border-color: var(--accent); box-shadow: var(--ring); }
 .h-row { display: flex; align-items: center; gap: 14px; padding: 13px 14px 13px 16px; cursor: pointer; }
 .h-row:hover { background: var(--surface-2); }
 .kind { display: grid; place-items: center; width: 38px; height: 38px; border-radius: 11px; flex: none; background: var(--surface-2); color: var(--muted); }
-.kind.v { background: var(--accent-soft); color: var(--accent); }
+.kind .i { width: 19px; height: 19px; }
 .h-main { flex: 1; min-width: 0; }
 .h-title { font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .h-meta { font-size: 13px; color: var(--muted); display: flex; gap: 2px 12px; flex-wrap: wrap; margin-top: 1px; }
@@ -94,8 +98,8 @@ input[type=url]:focus { border-color: var(--accent); box-shadow: var(--ring); }
 .h-actions button.primary { background: var(--accent-soft); border-color: transparent; color: var(--accent); }
 .h-actions button.primary:hover { background: var(--accent); border-color: var(--accent); color: var(--accent-text); }
 .more-btn { display: inline-flex; align-items: center; gap: 7px; color: var(--muted); flex: none; }
-.chev { width: 6px; height: 6px; border-right: 1.6px solid currentColor; border-bottom: 1.6px solid currentColor; transform: rotate(45deg) translateY(-2px); transition: transform .15s; }
-.open .chev { transform: rotate(-135deg) translate(-2px, 0); }
+.chev { width: 15px; height: 15px; transition: transform .15s; }
+.h-item.open > .h-row .chev { transform: rotate(180deg); }
 .badge { font-size: 12px; font-weight: 500; padding: 0 8px; border-radius: 99px; }
 .badge.error { background: var(--err-soft); color: var(--err); }
 .badge.cancelled, .badge.interrupted { background: var(--warn-soft); color: var(--warn); }
@@ -106,7 +110,7 @@ input[type=url]:focus { border-color: var(--accent); box-shadow: var(--ring); }
 .files li + li { border-top: 1px solid var(--border); }
 .files .fn { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .files .sz { color: var(--muted); font-size: 13px; }
-.files a { display: grid; place-items: center; width: 30px; height: 30px; border-radius: 8px; color: var(--muted); text-decoration: none; font-size: 16px; }
+.files a { display: grid; place-items: center; width: 30px; height: 30px; border-radius: 8px; color: var(--muted); text-decoration: none; }
 .files a:hover { background: var(--surface-2); color: var(--text); }
 .files button.sm { width: 30px; height: 30px; padding: 0; }
 .tools { display: flex; gap: 6px; flex-wrap: wrap; }
@@ -136,6 +140,7 @@ input[type=url]:focus { border-color: var(--accent); box-shadow: var(--ring); }
   .h-actions { width: 100%; padding-left: 52px; }
   .h-actions:empty { display: none; }
   .h-actions { width: auto; flex: 1; }
+  .more-btn { margin-left: 41px; }  /* текст — по левому краю кнопок строки (отступ 52 − поле кнопки 11) */
   .h-detail { padding: 0 12px 14px; }
   .player .pt { display: none; }
 }
