@@ -34,6 +34,16 @@ async def lifespan(_):
 app = FastAPI(lifespan=lifespan)
 
 
+@app.middleware("http")
+async def fresh_ui(request, call_next):
+    """Файлы интерфейса — всегда сверять с сервером (ETag → 304). Без этого браузер держал старый CSS/JS
+    из кэша, а разметку брал новую, и кнопки наезжали друг на друга (29.09)."""
+    resp = await call_next(request)
+    if not request.url.path.startswith(("/api/", "/files/")):
+        resp.headers["Cache-Control"] = "no-cache"
+    return resp
+
+
 class UrlIn(BaseModel):
     url: str
 

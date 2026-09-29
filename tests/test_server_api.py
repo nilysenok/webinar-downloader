@@ -29,5 +29,23 @@ class CreateJob(unittest.TestCase):
         self.launch.assert_not_called()
 
 
+class FreshUi(unittest.TestCase):
+    """Старый CSS из кэша + новая разметка = кнопки наезжают: файлы интерфейса браузер сверяет каждый раз."""
+
+    def test_ui_files_are_revalidated(self):
+        client = TestClient(server_app.app)
+        for path in ("/", "/style.css", "/app.js"):
+            r = client.get(path)
+            self.assertEqual(r.status_code, 200, path)
+            self.assertEqual(r.headers.get("cache-control"), "no-cache", path)
+        etag = client.get("/style.css").headers["etag"]
+        self.assertEqual(client.get("/style.css", headers={"If-None-Match": etag}).status_code, 304)
+
+    def test_api_is_left_alone(self):
+        with mock.patch.object(server_app.store, "jobs", {}):
+            r = TestClient(server_app.app).get("/api/jobs")
+        self.assertNotEqual(r.headers.get("cache-control"), "no-cache")
+
+
 if __name__ == "__main__":
     unittest.main()
