@@ -4,11 +4,12 @@ import os
 import shutil
 from contextlib import asynccontextmanager
 from pathlib import Path
+from urllib.parse import urlsplit
 
 import httpx
 import uvicorn
 from fastapi import FastAPI, HTTPException
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, PlainTextResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
@@ -19,6 +20,7 @@ from downloader.config import ROOT, TIMEOUT, UA
 from . import store
 
 PORT = int(os.environ.get("PORT", 8765))
+LOCAL = {"127.0.0.1", "localhost", "::1"}
 
 
 @asynccontextmanager
@@ -41,6 +43,20 @@ async def fresh_ui(request, call_next):
     if not request.url.path.startswith(("/api/", "/files/")):
         resp.headers["Cache-Control"] = "no-cache"
     return resp
+
+
+@app.middleware("http")
+async def local_only(request, call_next):
+    """Отвечаем только на адрес этого компьютера и только своей странице.
+
+    Без проверки Host чужой сайт, подменив своё имя на 127.0.0.1 (DNS rebinding), читал бы историю и файлы;
+    без проверки Origin — отменял бы загрузки запросом без тела (ему не нужен preflight).
+    """
+    origin = request.headers.get("origin")
+    if urlsplit("//" + request.headers.get("host", "")).hostname not in LOCAL \
+            or origin is not None and urlsplit(origin).hostname not in LOCAL:
+        return PlainTextResponse("Дашборд доступен только с этого компьютера", 403)
+    return await call_next(request)
 
 
 class UrlIn(BaseModel):
@@ -147,7 +163,7 @@ def delete(job_id: str):
 @app.get("/files/{job_id}/{n}")
 def file(job_id: str, n: int, dl: int = 0):
     job = get(job_id)
-    if n >= len(job.outputs) or not Path(job.outputs[n]["path"]).exists():
+    if not 0 <= n < len(job.outputs) or not Path(job.outputs[n]["path"]).exists():
         raise HTTPException(404, "Файл не найден")
     path = Path(job.outputs[n]["path"])
     return FileResponse(path, filename=path.name if dl else None,

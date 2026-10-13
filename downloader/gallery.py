@@ -12,6 +12,7 @@ from pathlib import Path
 
 from . import layout, speech, tiles
 from .media import _to_file, duration
+from .osdeps import graph_option
 
 PARALLEL = 3
 
@@ -59,10 +60,13 @@ async def _segment(job, i, seg, sessions, labels, work: Path, tick):
         # ffmpeg на каждую смену пересобирает граф, color начинает с нуля — на ИФР сборка вставала (28.09)
         args += ["-reinit_filter", "0", "-ss", f"{ss:.3f}", "-t", f"{length:.3f}", "-i", path]
     length = seg.t1 - seg.t0
-    args += ["-filter_complex", graph, "-map", "[out]", "-an", *codec(), "-r", str(tiles.FPS), "-t", f"{length:.3f}"]
-    key = hashlib.sha1(json.dumps([str(a) for a in args]).encode()).hexdigest()[:10]
+    tail = ["-map", "[out]", "-an", *codec(), "-r", str(tiles.FPS), "-t", f"{length:.3f}"]
+    key = hashlib.sha1(json.dumps([str(a) for a in [*args, graph, *tail]]).encode()).hexdigest()[:10]
     out = work / f"seg_{i:04d}_{key}.mp4"
     if not out.exists():
+        # граф — файлом: рамки говорящих на длинной записи — десятки КБ, а командная строка Windows — 32 767 символов
+        (work / f"seg_{i:04d}.graph").write_text(graph, encoding="utf-8")
+        args += [*graph_option(), f"seg_{i:04d}.graph", *tail]
         await _to_file(job, args, out, lambda s: tick(i, min(s, length)), cwd=work)
     tick(i, length)
     return out
@@ -70,6 +74,8 @@ async def _segment(job, i, seg, sessions, labels, work: Path, tick):
 
 async def render(job, tracks, videos: dict, audios: dict, mix: Path | None, out: Path, on_time=None):
     """tracks — все дорожки записи; videos/audios: {id: путь}; mix — общий звук (или None)."""
+    if job.duration <= 0:  # без неё раскладку не построить; раньше падало IndexError в layout.plan
+        raise RuntimeError("Неизвестна длительность записи — общий экран не собрать; скачайте «Аудио»")
     work = job.work / "gallery"
     work.mkdir(parents=True, exist_ok=True)
     talk = await _speech(job, tracks, audios, work)

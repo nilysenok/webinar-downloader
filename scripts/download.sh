@@ -1,5 +1,5 @@
 #!/bin/bash
-# Длинная загрузка из терминала без дашборда. Mac не уснёт, пока идёт загрузка (caffeinate -i).
+# Длинная загрузка из терминала без дашборда (macOS, Linux). Компьютер не уснёт: об этом заботится сам CLI (osdeps.Awake).
 # Пример: scripts/download.sh "https://my.mts-link.ru/j/…/record-new/…" --mode audio --workers 64
 cd "$(dirname "$0")/.." || exit 1
-exec caffeinate -i .venv/bin/python -m downloader.cli "$@"
+exec .venv/bin/python -m downloader.cli "$@"

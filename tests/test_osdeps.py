@@ -29,6 +29,20 @@ class OsDeps(unittest.TestCase):
         with mock.patch.object(tiles, "has_filter", return_value=False):
             self.assertEqual(tiles.text("t.txt", 30, True), "null")
 
+    def test_graph_from_file_option_follows_ffmpeg_version(self):
+        # граф общего экрана идёт файлом (командная строка Windows — 32 767 символов); ключ сменился в ffmpeg 7
+        for banner, want in (("ffmpeg version 6.1.1-3ubuntu5 Copyright", "-filter_complex_script"),
+                             ("ffmpeg version 4.4.2-0ubuntu0.22.04.1", "-filter_complex_script"),
+                             ("ffmpeg version 7.1.1 Copyright", "-/filter_complex"),
+                             ("ffmpeg version n9.0.1", "-/filter_complex"),
+                             ("ffmpeg version 8.0-essentials_build-www.gyan.dev", "-/filter_complex"),
+                             ("ffmpeg version N-118000-g1a2b3c4d5e", "-/filter_complex"),
+                             ("ffmpeg version 2026-09-01-git-1a2b3c4d5e-full_build", "-/filter_complex")):
+            osdeps.graph_option.cache_clear()
+            with mock.patch.object(osdeps.subprocess, "run", return_value=mock.Mock(stdout=banner + "\nbuilt with …")):
+                self.assertEqual(osdeps.graph_option(), [want], banner)
+        osdeps.graph_option.cache_clear()
+
     def test_console_survives_a_non_utf8_pipe(self):
         # так было в Windows: вывод в cp1252, первый print с кириллицей ронял сервер
         env = {k: v for k, v in os.environ.items() if k != "PYTHONUTF8"} | {"PYTHONIOENCODING": "cp1252"}

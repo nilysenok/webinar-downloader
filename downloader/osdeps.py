@@ -1,5 +1,6 @@
 """Всё, что зависит от ОС (macOS, Windows, Linux): шрифт подписей, «не спать», показать файл в папке."""
 import os
+import re
 import shutil
 import subprocess
 import sys
@@ -38,6 +39,14 @@ def has_filter(name: str) -> bool:
     """Есть ли фильтр в этой сборке ffmpeg. Homebrew-ffmpeg 8+ собран без drawtext (подписи) — нужен ffmpeg-full."""
     out = subprocess.run(["ffmpeg", "-hide_banner", "-filters"], capture_output=True, text=True).stdout
     return any(ln.split()[1:2] == [name] for ln in out.splitlines())
+
+
+@cache
+def graph_option() -> list:
+    """Ключ «граф фильтров из файла»: с ffmpeg 7 — `-/filter_complex`, раньше — `-filter_complex_script`."""
+    out = subprocess.run(["ffmpeg", "-version"], capture_output=True, text=True).stdout
+    major = re.match(r"ffmpeg version n?(\d+)\.", out)  # сборки из git («N-12345-g…») — новее 7
+    return ["-filter_complex_script"] if major and int(major[1]) < 7 else ["-/filter_complex"]
 
 
 def filter_path(p: Path) -> str:

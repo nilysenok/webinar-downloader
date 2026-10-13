@@ -10,7 +10,7 @@
 - запуск: `start.command` (macOS, Finder), `start.bat` (Windows, Проводник; winget-подсказки, UTF-8 через chcp 65001), `start.sh` (Linux и macOS из терминала; apt/dnf-подсказки) — все создают `.venv`, ставят зависимости и открывают дашборд
 - `.gitattributes`: `*.bat` — CRLF, `*.sh` / `*.command` — LF; CI `.github/workflows/tests.yml`: тесты на macOS, Windows, Ubuntu + запуск start.bat / start.sh с нуля до ответа дашборда
 - `start.command` (корень) — двойной клик в Finder: найти рабочий Python 3.10+, создать `.venv`, поставить `requirements.txt`, поднять сервер, открыть браузер; если сервер уже жив — просто открыть
-- `scripts/download.sh <ссылка> [--mode …]` — CLI-загрузка под `caffeinate -i`
+- `scripts/download.sh <ссылка> [--mode …]` — короткая форма CLI-загрузки (macOS, Linux); «не спать» делает сам CLI (`osdeps.Awake`), `caffeinate` в скрипте убран — в Linux его нет (13.10)
 - `scripts/bench.py <ссылка> --secs 60 --workers 64,256 [--http2] [--ip A,B]` — замер скорости сегментов без записи на диск; `--http2` требует `pip install h2` (в requirements нет — HTTP/2 проигрывает)
 - `requirements.txt`: fastapi, uvicorn, httpx; внешняя зависимость — `ffmpeg`/`ffprobe` (Homebrew)
 - `xtask.py` + `tools/` — сборщик и валидатор канона; `tests/` — unittest
@@ -33,6 +33,7 @@
 - клиент Hugging Face (`snapshot_download`) завис на 1,23 из 1,61 ГБ (26.09) — `setup.sh` качает через `curl -C -` с проверкой sha256
 - Homebrew `python@3.13` 3.13.7 сломан: бинарник `python3.13` — пустой файл 0 байт, `python3` молча ничего не делает (25.09). Лечится `brew reinstall python@3.13`; проект живёт на 3.12, поэтому не чиним
 - `caffeinate -i` не спасает от сна при закрытой крышке — крышку во время длинной загрузки не закрывать
+- зависимости в `requirements.txt` без верхних границ: CI ставит свежие версии и может покраснеть без изменений в коде; starlette уже предупреждает, что `TestClient` поверх httpx устарел (13.10, fastapi 0.141 / starlette 1.7)
 
 ## ПЕЧАТИ
 Ъ — сборщик канона: `python xtask.py`, валидатор `python xtask.py --check` (вместо cargo xtask) (25.09)
@@ -44,6 +45,8 @@
 
 ## ОТКРЫТО
 ❓ куда копировать `downloads/` для бэкапа (второй диск / облако) и нужно ли вообще
+❓ в `pravila.md` и `spec.md` — ссылка и id настоящей открытой записи (18 участников): репозиторий публичный, скачать её может любой; печать 29.09 говорит про записи и имена, про ссылки в текущих файлах — нет. Оставить или заменить на «ссылка у владельца»? (13.10)
+❓ ветки `archive/gallery-toggle-28.09` и `archive/ui-simplify-28.09` есть только в локальной копии: на GitHub одна `main` (`git ls-remote`, 13.10), хотя запись в архиве 29.09 говорит «сохранена в origin». Отправить в публичный репо или оставить локально?
 
 ## НЕ ТРОГАТЬ
 - `start.command`: перебор `python3.12 → … → python3` с проверкой `print(...)` — голый `python3` на этой машине битый и молчит

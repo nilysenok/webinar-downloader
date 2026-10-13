@@ -129,6 +129,12 @@ class RenderTest(unittest.TestCase):
             self.assertLess(max(pixel(out, 1.4, 1, 90)), 60)  # пауза — рамки нет
             self.assertGreater(pixel(out, 2.4, 1, 90)[1], 150)
 
+    def test_unknown_duration_is_a_clear_error(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            job = Job("u", duration=0.0, folder=tmp)
+            with self.assertRaisesRegex(RuntimeError, "длительность"):
+                asyncio.run(gallery.render(job, [], {}, {}, None, Path(tmp) / "g.mp4"))
+
     def test_without_gallery_each_video_is_its_own_file(self):
         with tempfile.TemporaryDirectory() as tmp:
             d = Path(tmp)

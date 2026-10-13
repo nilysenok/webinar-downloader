@@ -40,7 +40,15 @@ async def fetch(client, url, job=None):
                 job.retries += 1
                 if job.retries <= 50 or job.retries % 50 == 0:  # не заваливаем журнал
                     job.add_log("warn", f"Повтор {attempt}/{RETRIES - 1}: {type(e).__name__} {status or ''} …/{tail}")
-            await asyncio.sleep(min(2 ** attempt, 20))
+            await _pause(min(2 ** attempt, 20), job)
+
+
+async def _pause(secs: float, job=None):
+    """Пауза перед повтором; отмена задачи прерывает её за полсекунды, а не через 20 с."""
+    for _ in range(int(secs * 2)):
+        if job and job.cancel:
+            raise Cancelled
+        await asyncio.sleep(0.5)
 
 
 def _names_and_durations(logs):
@@ -147,7 +155,7 @@ async def analyze(client, url, job=None):
         parse_master(t, h, text)
     await asyncio.gather(*(_probe_video(client, t, job) for t in tracks if t.variants))
     return {"sid": sid, "title": rec.get("name") or sid, "date": (rec.get("createAt") or "")[:10],
-            "duration": float(rec.get("duration") or 0), "tracks": tracks}
+            "duration": float(rec.get("duration") or 0) or max(t.start + t.duration for t in tracks), "tracks": tracks}
 
 
 async def _probe_video(client, t: Track, job=None):

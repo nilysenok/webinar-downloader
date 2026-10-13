@@ -1,4 +1,5 @@
 """Разбор записи и HLS, выбор качества, папки загрузок, прогресс задачи — без сети."""
+import asyncio
 import tempfile
 import time
 import unittest
@@ -6,7 +7,7 @@ from pathlib import Path
 from unittest import mock
 
 from downloader import Job, job_folder, session_id
-from downloader import pipeline
+from downloader import hls, pipeline
 from downloader.hls import parse_master, parse_media, parse_record, pick_variant
 from downloader.models import Track
 
@@ -109,6 +110,33 @@ class JobTest(unittest.TestCase):
         t = Track(id=1, name="x", start=0, duration=1)
         j.got_segment(t, 100, cached=True)
         self.assertEqual((j.seg_done, j.seg_cached, j._net_bytes), (1, 1, 0))
+
+
+
+class NetTest(unittest.TestCase):
+    def test_cancel_does_not_wait_for_the_retry_pause(self):
+        class Down:
+            async def get(self, url):
+                raise hls.httpx.ConnectError("нет сети")
+
+        async def go():
+            job = Job("u")
+            asyncio.get_running_loop().call_later(0.2, setattr, job, "cancel", True)
+            t = time.monotonic()
+            with self.assertRaises(hls.Cancelled):
+                await hls.fetch(Down(), "https://h/a/1.m4s", job)
+            return time.monotonic() - t
+
+        self.assertLess(asyncio.run(go()), 1.5)  # пауза перед повтором — 2 с и дальше до 20 с
+
+    def test_record_without_duration_takes_it_from_tracks(self):
+        class Api:
+            async def get(self, url):
+                return mock.Mock(status_code=200, json=lambda: REC | {"duration": None}, raise_for_status=lambda: None)
+
+        with mock.patch.object(hls, "fetch", mock.AsyncMock(return_value=b"")):
+            info = asyncio.run(hls.analyze(Api(), "https://my.mts-link.ru/j/1/2/record-new/3"))
+        self.assertEqual(info["duration"], 65.5)  # дорожка Анны: старт 5,5 с + 60 с
 
 
 if __name__ == "__main__":

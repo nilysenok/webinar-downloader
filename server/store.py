@@ -1,6 +1,7 @@
 """Реестр задач сервера: history.json, запуск в фоне, автосохранение, «не спать» во время загрузок."""
 import asyncio
 import json
+import threading
 import time
 from pathlib import Path
 
@@ -14,13 +15,15 @@ jobs: dict[str, Job] = {}
 tasks: dict[str, asyncio.Task] = {}
 _sizes: dict[str, tuple[float, int]] = {}
 _awake = Awake()
+_saving = threading.Lock()  # save() зовут и цикл событий, и поток автосохранения — файл history.tmp у них общий
 
 
 def save():
-    data = [j.to_dict() for j in jobs.values()]
-    tmp = HISTORY.with_suffix(".tmp")
-    tmp.write_text(json.dumps(data, ensure_ascii=False, indent=1), encoding="utf-8")
-    tmp.replace(HISTORY)
+    with _saving:
+        data = [j.to_dict() for j in list(jobs.values())]  # копия списка: задачу могут добавить посреди обхода
+        tmp = HISTORY.with_suffix(".tmp")
+        tmp.write_text(json.dumps(data, ensure_ascii=False, indent=1), encoding="utf-8")
+        tmp.replace(HISTORY)
 
 
 def load():
@@ -69,8 +72,10 @@ def launch(job: Job):
     async def runner():
         await run(job)
         forget_size(job)
-        save()
-        keep_awake()
+        try:
+            save()
+        finally:
+            keep_awake()  # даже если история не записалась, «не спать» надо снять
 
     tasks[job.id] = asyncio.create_task(runner())
     keep_awake()
@@ -81,7 +86,10 @@ async def autosave():
     while True:
         await asyncio.sleep(2)
         if any_active():
-            await asyncio.to_thread(save)
+            try:
+                await asyncio.to_thread(save)
+            except OSError:
+                pass  # диск полон или занят — повторим через 2 с; автосохранение не должно умирать до перезапуска
 
 
 def shutdown():
