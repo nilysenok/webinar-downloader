@@ -117,6 +117,18 @@ class RenderTest(unittest.TestCase):
             self.assertEqual(streams[:2], ["video", "audio"])
             self.assertAlmostEqual(float(streams[2]), 60.0, delta=0.2)
 
+    def test_border_with_hundreds_of_speech_spans(self):
+        """FFmpeg с 8.1 падал «Cannot allocate memory» на рамке из сотен отрезков речи; рамка при этом та же."""
+        spans = [(1000 + i * 2.0, 1001 + i * 2.0) for i in range(700)]  # говорит 0–1, 2–3, … от начала отрезка
+        with tempfile.TemporaryDirectory() as tmp:
+            out = Path(tmp) / "b.webm"
+            ff("-f", "lavfi", "-i", f"color=c=black:s=320x180:r=5:d=4{tiles._border(spans, 1000, 180)}",
+               "-c:v", "libvpx-vp9", "-deadline", "realtime", out)
+            r, g, b = pixel(out, 0.4, 1, 90)
+            self.assertTrue(g > 150 and r < 120, (r, g, b))  # говорит — рамка
+            self.assertLess(max(pixel(out, 1.4, 1, 90)), 60)  # пауза — рамки нет
+            self.assertGreater(pixel(out, 2.4, 1, 90)[1], 150)
+
     def test_without_gallery_each_video_is_its_own_file(self):
         with tempfile.TemporaryDirectory() as tmp:
             d = Path(tmp)

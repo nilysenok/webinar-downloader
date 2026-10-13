@@ -36,10 +36,22 @@ def text(textfile: str, size: int, center: bool) -> str:
             f":box=1:boxcolor=black@0.55:boxborderw={max(6, size // 5)}:{where}")
 
 
+def _any_of(terms: list) -> str:
+    """Сумма условий деревом в скобках: ((a+b)+(c+d)), а не цепочкой a+b+c+d.
+
+    FFmpeg с 8.1 не принимает выражение глубже 100, а цепочка из N слагаемых — это глубина N:
+    на отрезке, где человек говорил больше 100 раз, сборка падала «Cannot allocate memory» (13.10).
+    """
+    if len(terms) == 1:
+        return terms[0]
+    mid = len(terms) // 2
+    return f"({_any_of(terms[:mid])}+{_any_of(terms[mid:])})"
+
+
 def _border(spans, t0: float, h: int) -> str:
     """Зелёная рамка, пока человек говорит; время — от начала отрезка."""
-    when = "+".join(f"between(t,{a - t0:.2f},{b - t0:.2f})" for a, b in spans)
-    return f",drawbox=x=0:y=0:w=iw:h=ih:color={TALK}:t={max(4, h // 90)}:enable='{when}'" if when else ""
+    terms = [f"between(t,{a - t0:.2f},{b - t0:.2f})" for a, b in spans]
+    return f",drawbox=x=0:y=0:w=iw:h=ih:color={TALK}:t={max(4, h // 90)}:enable='{_any_of(terms)}'" if terms else ""
 
 
 def graph(seg, sessions, labels):

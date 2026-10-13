@@ -58,6 +58,41 @@ class SpeechTest(unittest.TestCase):
         self.assertFalse(any(s[14:]))  # одиночный всплеск 0,5 с — не речь
 
 
+def depth(e: str) -> int:
+    """Глубина дерева выражения, как её считает FFmpeg: функция — 1, каждое «+» — на 1 глубже своих слагаемых."""
+    pos = 0
+
+    def term():
+        nonlocal pos
+        if e[pos] == "(":
+            pos += 1
+            d = total()
+            pos += 1  # «)»
+            return d
+        pos = e.index(")", pos) + 1  # between(t,a,b)
+        return 1
+
+    def total():
+        nonlocal pos
+        d = term()
+        while pos < len(e) and e[pos] == "+":
+            pos += 1
+            d = max(d, term()) + 1
+        return d
+
+    return total()
+
+
+class BorderTest(unittest.TestCase):
+    def test_hundreds_of_speech_spans_stay_within_ffmpeg_depth(self):
+        spans = [(i * 15.0, i * 15.0 + 9.5) for i in range(700)]  # лектор на записи в три часа
+        expr = tiles._border(spans, 0, 240).split("enable='")[1].rstrip("'")
+        self.assertEqual(expr.count("between("), 700)
+        self.assertLessEqual(depth(expr), 20)  # предел FFmpeg с 8.1 — 100
+        self.assertEqual(depth("+".join(["between(t,0,1)"] * 101)), 101)  # цепочка, как было: уже за пределом
+        self.assertEqual(tiles._border([], 0, 240), "")
+
+
 class GridTest(unittest.TestCase):
     def test_layouts(self):
         self.assertEqual(tiles.grid(1), [(2, 2, 1276, 716)])  # один — на весь экран
