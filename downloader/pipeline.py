@@ -7,7 +7,7 @@ from pathlib import Path
 import httpx
 
 from .config import DOWNLOADS, MODES, TIMEOUT, UA
-from . import gallery
+from . import gallery, slides
 from .boxes import video_size
 from .hls import Cancelled, analyze, fetch, parse_media, pick_variant
 from .limits import enough_for, raise_open_files
@@ -78,6 +78,7 @@ async def _run(job: Job):
 async def _prepare(job: Job, client):
     info = await analyze(client, job.url, job)
     job.title, job.rec_date, job.duration = info["title"], info["date"], info["duration"]
+    job.slides = slides.parse(info["events"], job.duration)
     tracks = info["tracks"]
     job_folder(job)
     job.work.mkdir(parents=True, exist_ok=True)

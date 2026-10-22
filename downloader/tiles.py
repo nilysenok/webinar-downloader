@@ -1,4 +1,4 @@
-"""Кадр общего экрана на одном отрезке: сетка плиток, видео, имена, рамка говорящего.
+"""Кадр общего экрана на одном отрезке: сетка плиток, видео, имена, рамка говорящего, слайд.
 
 Пути к подписям — относительные (ffmpeg запускается в папке подписей): в граф не попадает путь
 загрузки, где могут быть кавычки и двоеточия.
@@ -9,19 +9,21 @@ from .osdeps import filter_path, font, has_filter
 
 W, H, FPS = 1280, 720, 25
 BG, TILE, TALK, GAP = "0x111111", "0x262626", "0x2fd26b", 4
+SIDE = 320  # полоса камер справа, пока показывают файл: слайд крупно, как в Zoom
 
 
-def grid(n: int):
-    """Плитки 16:9 (x, y, w, h): столбцов ⌈√n⌉, неполный последний ряд — по центру, как в Zoom."""
-    cols = math.ceil(math.sqrt(n))
+def grid(n: int, box=(0, 0, W, H), cols=0):
+    """Плитки 16:9 (x, y, w, h) в рамке box: столбцов ⌈√n⌉, неполный последний ряд — по центру, как в Zoom."""
+    bx, by, bw, bh = box
+    cols = cols or math.ceil(math.sqrt(n))
     rows = math.ceil(n / cols)
-    tw = min(W // cols, H // rows * 16 // 9)
+    tw = min(bw // cols, bh // rows * 16 // 9)
     th = tw * 9 // 16
-    y0 = (H - rows * th) // 2
+    y0 = by + (bh - rows * th) // 2
     cells = []
     for i in range(n):
         r, c = divmod(i, cols)
-        x0 = (W - min(cols, n - r * cols) * tw) // 2
+        x0 = bx + (bw - min(cols, n - r * cols) * tw) // 2
         cells.append((x0 + c * tw + GAP // 2, y0 + r * th + GAP // 2, (tw - GAP) // 2 * 2, (th - GAP) // 2 * 2))
     return cells
 
@@ -54,18 +56,33 @@ def _border(spans, t0: float, h: int) -> str:
     return f",drawbox=x=0:y=0:w=iw:h=ih:color={TALK}:t={max(4, h // 90)}:enable='{_any_of(terms)}'" if terms else ""
 
 
+def _slide(seg, inputs, parts, d) -> str:
+    """Слайд на фоне: на весь кадр или слева от полосы камер. Картинка — 1 кадр/с: overlay держит последний."""
+    k, sw = len(inputs), W - SIDE if seg.who else W
+    inputs.append((seg.slide, None, float(d)))
+    parts.append(f"[{k}:v]scale={sw}:{H}:force_original_aspect_ratio=decrease,setsar=1[s{k}]")
+    parts.append(f"[bg][s{k}]overlay=x=({sw}-w)/2:y=({H}-h)/2[sl]")
+    return "sl"
+
+
 def graph(seg, sessions, labels):
-    """(входы [(путь, с какой секунды, сколько)], filter_complex) отрезка seg.
+    """(входы [(путь, с какой секунды или None у картинки, сколько)], filter_complex) отрезка seg.
 
     sessions: {имя: [(начало, конец, путь к видео)]} на шкале записи; labels: {имя: файл подписи}.
     """
     t0, dur = seg.t0, seg.t1 - seg.t0
     d = f"{dur:.3f}"
     parts, inputs, last = [f"color=c={BG}:s={W}x{H}:r={FPS}:d={d}[bg]"], [], "bg"
-    if not seg.who:
+    if not seg.who and not seg.slide:
         parts.append(f"[bg]{text('title.txt', 40, True)},format=yuv420p[out]")
         return inputs, ";".join(parts)
-    for p, (who, (x, y, w, h)) in enumerate(zip(seg.who, grid(len(seg.who)))):
+    n, cells = len(seg.who), []
+    if seg.slide:
+        last = _slide(seg, inputs, parts, d)
+        cells = grid(n, (W - SIDE, 0, SIDE, H), math.ceil(n / 4)) if n else []
+    elif n:
+        cells = grid(n)
+    for p, (who, (x, y, w, h)) in enumerate(zip(seg.who, cells)):
         cur = f"t{p}"
         parts.append(f"color=c={TILE}:s={w}x{h}:r={FPS}:d={d}[{cur}]")
         seen = False

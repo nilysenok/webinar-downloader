@@ -18,6 +18,7 @@ class Segment:
     t1: float
     who: list = field(default_factory=list)  # имена в порядке плиток
     talk: dict = field(default_factory=dict)  # имя → [(a, b)] речь внутри отрезка, с от начала записи
+    slide: str = ""  # картинка слайда на экране (показ файла), пусто — нет
 
 
 def _visible(duration, cams, talk):
@@ -101,3 +102,20 @@ def plan(duration, cams, talk):
         order += sorted(vis - set(order))
     return [Segment(a, b, [p for p in order if p in vis], {p: _talk_spans(talk.get(p, ()), a, b) for p in vis})
             for a, b, vis in segs]
+
+
+def with_slides(segs, shows):
+    """Режет отрезки по сменам слайдов: shows [(с, по, картинка)] → у каждого куска свой slide.
+
+    Границы слайдов округляются до целых секунд, как и границы отрезков.
+    """
+    cuts = sorted({round(t) for a, b, _ in shows for t in (a, b)})
+    out = []
+    for s in segs:
+        edges = [s.t0] + [c for c in cuts if s.t0 < c < s.t1] + [s.t1]
+        for a, b in zip(edges, edges[1:]):
+            mid = (a + b) / 2
+            slide = next((p for x, y, p in shows if round(x) <= mid < round(y)), "")
+            talk = {p: [(max(x, a), min(y, b)) for x, y in v if min(y, b) > max(x, a)] for p, v in s.talk.items()}
+            out.append(Segment(a, b, s.who, talk, slide))
+    return out

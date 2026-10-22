@@ -43,6 +43,7 @@ class Job:
     finished: float = 0.0
     folder: str = ""  # downloads/ГГГГ-ММ-ДД_ЧЧММ <название>
     tracks: list = field(default_factory=list)
+    slides: list = field(default_factory=list)  # [(с, по, url картинки)] — показ файла (slides.py)
     seg_total: int = 0
     seg_done: int = 0
     seg_cached: int = 0

@@ -10,7 +10,7 @@ import json
 import sys
 from pathlib import Path
 
-from . import layout, speech, tiles
+from . import layout, slides, speech, tiles
 from .media import _to_file, duration
 from .osdeps import graph_option
 
@@ -56,6 +56,9 @@ async def _segment(job, i, seg, sessions, labels, work: Path, tick):
     inputs, graph = tiles.graph(seg, sessions, labels)
     args = []
     for path, ss, length in inputs:
+        if ss is None:  # слайд: одна картинка, повторяется раз в секунду
+            args += ["-loop", "1", "-framerate", "1", "-t", f"{length:.3f}", "-i", path]
+            continue
         # MTS Link меняет размер кадра внутри потока (1280×720 ↔ 640×360 ↔ 320×180). Без -reinit_filter 0
         # ffmpeg на каждую смену пересобирает граф, color начинает с нуля — на ИФР сборка вставала (28.09)
         args += ["-reinit_filter", "0", "-ss", f"{ss:.3f}", "-t", f"{length:.3f}", "-i", path]
@@ -81,13 +84,16 @@ async def render(job, tracks, videos: dict, audios: dict, mix: Path | None, out:
     talk = await _speech(job, tracks, audios, work)
     sessions = await _sessions(tracks, videos)
     segs = layout.plan(job.duration, {p: [(a, b) for a, b, _ in s] for p, s in sessions.items()}, talk)
+    shows = await slides.load(job, work)
+    segs = layout.with_slides(segs, shows)
     names = sorted({p for s in segs for p in s.who})
     labels = {p: f"n{k}.txt" for k, p in enumerate(names)}
     for p, f in labels.items():
         (work / f).write_text(p, encoding="utf-8")
     (work / "title.txt").write_text(job.title or "Запись", encoding="utf-8")
     job.add_log("info", f"Общий экран: отрезков {len(segs)}, в кадре до {max(len(s.who) for s in segs)} человек, "
-                        f"с камерой {len(sessions)}, говорили {sum(any(v) for v in talk.values())}")
+                        f"с камерой {len(sessions)}, говорили {sum(any(v) for v in talk.values())}, "
+                        f"слайдов на экране {len({p for _, _, p in shows})}")
     done, sem = {}, asyncio.Semaphore(PARALLEL)
 
     def tick(i, secs):

@@ -155,7 +155,8 @@ async def analyze(client, url, job=None):
         parse_master(t, h, text)
     await asyncio.gather(*(_probe_video(client, t, job) for t in tracks if t.variants))
     return {"sid": sid, "title": rec.get("name") or sid, "date": (rec.get("createAt") or "")[:10],
-            "duration": float(rec.get("duration") or 0) or max(t.start + t.duration for t in tracks), "tracks": tracks}
+            "duration": float(rec.get("duration") or 0) or max(t.start + t.duration for t in tracks), "tracks": tracks,
+            "events": rec.get("eventLogs") or []}
 
 
 async def _probe_video(client, t: Track, job=None):
