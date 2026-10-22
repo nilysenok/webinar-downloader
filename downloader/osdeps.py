@@ -49,6 +49,22 @@ def graph_option() -> list:
     return ["-filter_complex_script"] if major and int(major[1]) < 7 else ["-/filter_complex"]
 
 
+def direct_addresses() -> tuple:
+    """Адреса основной сети, если весь трафик идёт в VPN: с них запрос уходит мимо туннеля.
+
+    Только macOS: маршрут по умолчанию через utun/ppp/ipsec — это VPN, адреса берём у en0…en7.
+    Хост слайдов MTS Link через VPN владельца не отвечал, мимо — за 0,07 с (22.10). Без кэша: VPN включают и выключают.
+    """
+    if _os() != "darwin":
+        return ()
+    route = subprocess.run(["route", "-n", "get", "default"], capture_output=True, text=True).stdout
+    if not re.search(r"interface: (utun|ppp|ipsec)", route):
+        return ()
+    found = (subprocess.run(["ipconfig", "getifaddr", f"en{i}"], capture_output=True, text=True).stdout.strip()
+             for i in range(8))
+    return tuple(a for a in found if a)
+
+
 def filter_path(p: Path) -> str:
     """Путь для фильтра ffmpeg в одинарных кавычках: прямые слеши, двоеточие диска (C:) экранировано."""
     return p.as_posix().replace("'", r"'\''").replace(":", r"\:")

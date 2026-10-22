@@ -43,6 +43,21 @@ class OsDeps(unittest.TestCase):
                 self.assertEqual(osdeps.graph_option(), [want], banner)
         osdeps.graph_option.cache_clear()
 
+    def test_direct_addresses_only_behind_a_vpn_on_macos(self):
+        # хост слайдов через VPN не отвечал — качаем мимо туннеля с адреса основной сети
+        def run(route):
+            def fake(cmd, **_):
+                out = route if cmd[0] == "route" else {"en0": "192.168.1.25\n", "en1": ""}.get(cmd[-1], "")
+                return mock.Mock(stdout=out)
+            return fake
+        with mock.patch.object(osdeps, "_os", return_value="darwin"):
+            with mock.patch.object(osdeps.subprocess, "run", run("  interface: utun4\n")):
+                self.assertEqual(osdeps.direct_addresses(), ("192.168.1.25",))
+            with mock.patch.object(osdeps.subprocess, "run", run("  interface: en0\n")):
+                self.assertEqual(osdeps.direct_addresses(), ())  # VPN нет — обходить нечего
+        with mock.patch.object(osdeps, "_os", return_value="linux"):
+            self.assertEqual(osdeps.direct_addresses(), ())
+
     def test_console_survives_a_non_utf8_pipe(self):
         # так было в Windows: вывод в cp1252, первый print с кириллицей ронял сервер
         env = {k: v for k, v in os.environ.items() if k != "PYTHONUTF8"} | {"PYTHONIOENCODING": "cp1252"}
