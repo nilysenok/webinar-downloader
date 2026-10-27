@@ -408,6 +408,7 @@
     "- `scripts/bench.py <ссылка> --secs 60 --workers 64,256 [--http2] [--ip A,B]` — замер скорости сегментов без записи на диск; `--http2` требует `pip install h2` (в requirements нет — HTTP/2 проигрывает)",
     "- `requirements.txt`: fastapi, uvicorn, httpx; внешняя зависимость — `ffmpeg`/`ffprobe` (Homebrew)",
     "- `xtask.py` + `tools/` — сборщик и валидатор канона; `tests/` — unittest",
+    "- `scripts/kanon/` — скрипты канона v24 (`python -m scripts.kanon.<имя>`): `sverka_blokov` — блоки владельца без квитанции в `docs/resheniya/resheniya.md` (код 1, если есть); тесты — `tests/test_kanon.py`",
     "- `scripts/asr/` — замер распознавания речи (этап 9): `setup.sh` (whisper-cpp, `.venv-asr` с mlx-whisper, модели в `~/.cache`) → `tracks.sh <ссылка>` → `vad.py` → `run_cpp.sh` / `run_mlx.py` → `merge.py cpp|mlx` → `score.py cpp mlx`; `etalon.py` и `diff10.py` не перезаписывают выверенное без `--force`; `etalon2.py cpp embC300` — слепой эталон 7×2 мин (27.09): черновик из двух движков, расхождения «[x / y]» в случайном порядке, ключ в `etalon/.key.json`; `score.py` не считает, пока в эталоне есть невыбранные скобки; всё одной строкой — `run_all.sh <ссылка>`",
     "- git: публичный GitHub `nilysenok/webinar-downloader` (origin, push после каждой сессии; старый адрес mts-link-downloader перенаправляется); в git не идут `.venv/`, `downloads/`, `tracks/`, `history.json`"
    ],
@@ -564,6 +565,11 @@
   {
    "date": "27.10",
    "module": "канон",
+   "text": "Ж-004 Э1: журналы владельца в три файла (resheniya, ispolnenie, tolkovaniya; локально), квитанции «принят Ж-NNN», `scripts/kanon/sverka_blokov.py`, `templates/vopros.md`, хук трассируемости PR (Blok/Punkt); прогоны на копии: правка старой строки журнала и PR без Blok — отказ"
+  },
+  {
+   "date": "27.10",
+   "module": "канон",
    "text": "канон v23 (Ж-003): три слоя принуждения (§0), правила по структуре §7 (7 файлов `kanon/pravila/`, 61 пункт дословно), шаблоны `templates/`, `mutations.md` (13 мутаций, ловятся 10, M5–M7 — задача), хуки §0 и права — локально, реализованы и проверены (11 сценариев), выключены по Ж-004 до прогона на копии и «да»"
   },
   {
@@ -615,11 +621,6 @@
    "date": "13.10",
    "module": "server",
    "text": "`history.json`: поток автосохранения и цикл событий писали через один `history.tmp` — под нагрузкой 151 ошибка на 150 запусков (в жизни редко: запись 5 мс раз в 2 с), после первой автосохранение умирало до перезапуска. Замок на `save()`, автосохранение переживает ошибку диска, «не спать» снимается даже при сбое записи; `/files/{id}/-1` отдавал последний файл — теперь 404. Тесты"
-  },
-  {
-   "date": "13.10",
-   "module": "server",
-   "text": "сервер отвечал любому `Host`: чужой сайт через подмену DNS на 127.0.0.1 мог читать `/api/jobs` и качать `/files/` (воспроизведено: `Host: evil.example` → 200 со списком задач), а запросом без тела — отменять загрузки. Теперь `local_only`: чужой `Host` или `Origin` → 403; создание задачи с чужого сайта и раньше не проходило (422 / preflight). Тесты"
   }
  ],
  "check": {
