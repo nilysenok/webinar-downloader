@@ -21,7 +21,7 @@
 |---|---|---|---|---|---|---|
 | [rust-ui](rust-ui/_ctx.md) | ФРОНТЕНД | в работе | 1 | 0 | 0 | 0 |
 | [ui](ui/_ctx.md) | ФРОНТЕНД | в работе | 1 | 0 | 0 | 0 |
-| [downloader](downloader/_ctx.md) | БЭКЕНД | в работе | 7 | 0 | 5 | 1 |
+| [downloader](downloader/_ctx.md) | БЭКЕНД | в работе | 8 | 0 | 5 | 1 |
 | [rust-cli](rust-cli/_ctx.md) | БЭКЕНД | в работе | 1 | 0 | 0 | 0 |
 | [rust-core](rust-core/_ctx.md) | БЭКЕНД | в работе | 6 | 0 | 3 | 1 |
 | [rust-server](rust-server/_ctx.md) | БЭКЕНД | в работе | 1 | 0 | 0 | 0 |

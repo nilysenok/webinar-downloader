@@ -8,3 +8,4 @@ history.json
 history.tmp
 .DS_Store
 GATES.md
+!templates/GATES.md
