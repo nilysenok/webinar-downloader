@@ -1,3 +1,8 @@
+---
+paths:
+  - "tests/**"
+---
+
 # Проверка кода и результатов
 
 §5 канона v23. Путь `rules/mutations.md` из §5.1 — это `kanon/pravila/mutations.md`.

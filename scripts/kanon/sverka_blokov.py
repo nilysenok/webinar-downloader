@@ -6,8 +6,6 @@ import re
 import sys
 from pathlib import Path
 
-from downloader.osdeps import utf8_console
-
 DEFAULT = Path("docs/resheniya/resheniya.md")
 
 
@@ -23,6 +21,7 @@ def bloki(text: str) -> list:
 
 
 def main(argv) -> int:
+    from downloader.osdeps import utf8_console  # внутри: функции модуля импортирует и хук, без downloader
     utf8_console()  # Windows: вывод в cp1252 падал на кириллице (CI 27.10)
     path = Path(argv[0]) if argv else DEFAULT
     if not path.exists():
