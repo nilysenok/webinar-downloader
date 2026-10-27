@@ -1,9 +1,10 @@
 """Скрипты канона (scripts/kanon) на временных файлах."""
+import re
 import tempfile
 import unittest
 from pathlib import Path
 
-from scripts.kanon import sverka_blokov
+from scripts.kanon import sverka_blokov, validate_zadanie
 
 
 class SverkaTest(unittest.TestCase):
@@ -23,3 +24,22 @@ class SverkaTest(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class ValidateZadanieTest(unittest.TestCase):
+    """Ж-004 2.2: задание без любого из полей — отказ; образец — проходит."""
+    good = Path("templates/examples/horoshee_zadanie.md").read_text(encoding="utf-8")
+
+    def test_good_example_passes(self):
+        self.assertEqual(validate_zadanie.problems(self.good), [])
+
+    def test_each_field_is_required(self):
+        for field in validate_zadanie.FIELDS:
+            broken = re.sub(rf"^## \d+\. {field}$", "## 0. Убрано", self.good, flags=re.M)
+            self.assertTrue(any(field in e for e in validate_zadanie.problems(broken)), field)
+
+    def test_placeholders_hash_and_questions(self):
+        self.assertIn("поле «Владение» пустое (заглушка шаблона)",
+                      validate_zadanie.problems(self.good.replace("- `tests/test_mutatsii.py` (создать)", "- <путь>")))
+        self.assertIn("у входов нет sha256", validate_zadanie.problems(re.sub(r"sha256 [0-9a-f]+", "sha256 ?", self.good)))
+        self.assertIn("нет вопроса «подписывает»", validate_zadanie.problems(self.good.replace("подписывает", "решает")))

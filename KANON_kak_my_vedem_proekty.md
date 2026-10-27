@@ -37,7 +37,7 @@
 | `roadmap.md` | этапы проекта (из него рисуется степпер в дашборде) | я + ассистент |
 | `dashboard.html` | визуализация | **только сборщик** |
 | `kanon/pravila/*.md` | правила по темам (см. «Правила по темам») | я, редко |
-| `templates/` | шаблоны: `GATES.md`, `zadanie_agentu.md`, `otchet_agenta.md`, `handoff.md`, `FINAL_DESIGN.md`, `ctx.md` (шаблон `_ctx.md`) | я, редко |
+| `templates/` | шаблоны: `GATES.md`, `zadanie_agentu.md` (10 полей, валидатор), `otchet_agenta.md`, `handoff.md`, `pr.md`, `vopros.md`, `postmortem.md`, `FINAL_DESIGN.md`, `ctx.md` (шаблон `_ctx.md`); образцы — `examples/` | я, редко |
 | `docs/resheniya/resheniya.md` | блоки владельца дословно, с номером, временем и квитанцией; только дописывается | главная сессия, снизу |
 | `docs/otchety/` | отчёты и метрики с хэшами | главная сессия |
 | `kanon/prompty.md`, `kanon/uroki_hustle.md` | готовые промпты, уроки прошлых проектов | я |
